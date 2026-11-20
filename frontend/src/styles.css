@@ -1,13 +1,14 @@
 :root {
-  --navy: #0f2233;
-  --navy-dark: #0a1722;
+  /* Warm "heritage wealth" palette: deep pine darks, stone neutrals, cream */
+  --navy: #1b3a34;
+  --navy-dark: #122722;
   --teal: #0f766e;
   --teal-dark: #0b5d57;
-  --ink: #121c26;
-  --muted: #5c6b7a;
-  --line: #e3e8ee;
+  --ink: #23291f;
+  --muted: #6a6f60;
+  --line: #e4dfd2;
   --bg: #ffffff;
-  --bg-alt: #f6f8fa;
+  --bg-alt: #f6f3ec;
   --card: #ffffff;
   --error: #b42318;
   --error-bg: #fdecea;
@@ -222,7 +223,7 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 1.75rem;
-  box-shadow: 0 1px 3px rgba(13, 59, 102, 0.06);
+  box-shadow: 0 1px 3px rgba(35, 41, 31, 0.05);
 }
 
 .loading {
@@ -651,7 +652,7 @@ h3 {
   border-radius: 999px;
   font-size: 0.82rem;
   color: var(--muted);
-  background: #e9edf2;
+  background: #ebe7da;
 }
 
 .stepper-item--active {
@@ -661,7 +662,7 @@ h3 {
 }
 
 .stepper-item--done {
-  background: #dcebe3;
+  background: #dfeadd;
   color: var(--success);
 }
 
@@ -714,7 +715,7 @@ h3 {
   width: 100%;
   padding: 0.6rem 0.7rem;
   font-size: 0.95rem;
-  border: 1px solid #aab4c0;
+  border: 1px solid #b2ad9e;
   border-radius: 6px;
   background: #fff;
   color: var(--ink);
@@ -725,7 +726,7 @@ h3 {
 .field textarea:focus,
 .btn:focus,
 .chip:focus {
-  outline: 3px solid rgba(14, 124, 123, 0.35);
+  outline: 3px solid rgba(15, 118, 110, 0.3);
   outline-offset: 1px;
   border-color: var(--teal);
 }
@@ -761,7 +762,7 @@ h3 {
 }
 
 .notice {
-  background: #eef4fa;
+  background: #f3efe3;
   border-left: 3px solid var(--navy);
   padding: 0.7rem 0.9rem;
   font-size: 0.85rem;
@@ -805,7 +806,7 @@ h3 {
 .btn-secondary {
   background: transparent;
   color: var(--navy);
-  border-color: #b9c3cd;
+  border-color: #b2ad9e;
 }
 
 .btn-secondary:hover {
@@ -1020,11 +1021,11 @@ h3 {
 }
 
 .admin-table tbody tr:hover {
-  background: #f0f4f8;
+  background: #f4f1e8;
 }
 
 .row--selected {
-  background: #e8f0f7;
+  background: #ece7d8;
 }
 
 .admin-table .empty {
@@ -1049,7 +1050,7 @@ h3 {
 }
 
 .badge--draft {
-  background: #e9edf2;
+  background: #ebe7da;
   color: var(--muted);
 }
 
@@ -1059,12 +1060,12 @@ h3 {
 }
 
 .badge--in_review {
-  background: #e3ecf7;
+  background: #e3e9df;
   color: var(--navy);
 }
 
 .badge--approved {
-  background: #dcebe3;
+  background: #dfeadd;
   color: var(--success);
 }
 
@@ -1103,7 +1104,7 @@ h3 {
   border-radius: 8px;
   padding: 0.9rem 1rem;
   margin-top: 1rem;
-  background: #fafbfc;
+  background: #faf8f2;
 }
 
 .decision-actions {
@@ -1163,7 +1164,7 @@ h3 {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(13, 59, 102, 0.14);
+  box-shadow: 0 8px 24px rgba(35, 41, 31, 0.16);
   max-height: 240px;
   overflow-y: auto;
 }
@@ -1182,7 +1183,7 @@ h3 {
 }
 
 .suggestions button:hover {
-  background: #eef4fa;
+  background: #f3efe3;
 }
 
 /* BSB lookup feedback */
