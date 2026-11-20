@@ -66,8 +66,8 @@ class Settings(BaseSettings):
     email_provider: str = "console"  # console | resend | sendgrid
     resend_api_key: str = ""
     sendgrid_api_key: str = ""
-    email_from: str = "investments@example-bank.test"
-    email_from_name: str = "Example Bank Investments"
+    email_from: str = "investments@opal-bank.test"
+    email_from_name: str = "Opal Bank"
 
     rate_limit_per_minute: int = 30
 

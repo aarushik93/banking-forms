@@ -10,7 +10,10 @@ import type {
   SubmitResponse,
 } from './types'
 
-const BASE = '/api/v1'
+// On Render the static site talks to the API's own origin (VITE_API_BASE);
+// locally the Vite dev server / nginx proxy same-origin /api requests.
+const API_ORIGIN: string = import.meta.env.VITE_API_BASE ?? ''
+const BASE = `${API_ORIGIN}/api/v1`
 
 export class ApiError extends Error {
   constructor(

@@ -1,0 +1,81 @@
+# Render blueprint for the Opal Bank demo.
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo.
+# After the first deploy, set RESEND_API_KEY on opal-bank-api (it's sync: false),
+# and if Render had to suffix any service names, update the three URLs that
+# reference them (IDMATRIX_URL, CORS_ORIGINS, VITE_API_BASE).
+#
+# Notes:
+# - free web services sleep when idle (first request takes ~a minute)
+# - the free Postgres instance expires after its trial period
+# - ENV=demo keeps demo conveniences on (OTP debug codes, API docs)
+
+databases:
+  - name: opal-bank-db
+    plan: free
+
+services:
+  - type: web
+    name: opal-bank-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: opal-bank-db
+          property: connectionString
+      - key: ENV
+        value: demo
+      - key: LOG_JSON
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: ADMIN_API_TOKEN
+        generateValue: true
+      - key: KYC_PROVIDER
+        value: idmatrix
+      - key: IDMATRIX_URL
+        value: https://opal-bank-idmatrix.onrender.com/sys2/idmatrix-v4
+      - key: IDMATRIX_USERNAME
+        value: idm-demo
+      - key: IDMATRIX_PASSWORD
+        value: idm-demo-password
+      - key: EMAIL_PROVIDER
+        value: resend
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: onboarding@resend.dev
+      - key: EMAIL_FROM_NAME
+        value: Opal Bank
+      - key: CORS_ORIGINS
+        value: https://opal-bank.onrender.com
+      - key: ADDRESS_PROVIDER
+        value: nominatim
+      - key: ACCOUNT_VERIFICATION_PROVIDER
+        value: mock
+      - key: BSB_STRICT
+        value: "true"
+
+  - type: web
+    name: opal-bank-idmatrix
+    runtime: docker
+    rootDir: mock-services/idmatrix
+    plan: free
+    envVars:
+      - key: MOCK_DEFAULT_OUTCOME
+        value: ACCEPT
+
+  - type: web
+    name: opal-bank
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        value: https://opal-bank-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

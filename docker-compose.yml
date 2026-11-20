@@ -41,8 +41,8 @@ services:
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-investments@example-bank.test}
-      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Example Bank Investments}
+      EMAIL_FROM: ${EMAIL_FROM:-investments@opal-bank.test}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Opal Bank}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://localhost:5173}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
     depends_on:

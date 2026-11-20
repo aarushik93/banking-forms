@@ -4,7 +4,14 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import type { Fund } from '../types'
 
-export default function Landing() {
+const STEPS = [
+  ['Tell us about you', 'Your details, address and finances — about 10 minutes.'],
+  ['Verify as you go', 'We confirm your email and verify your identity electronically.'],
+  ['Choose your investment', 'Pick a fund, your starting amount, and an optional monthly plan.'],
+  ['Start investing', 'Approved applications are funded by direct debit and invested.'],
+]
+
+export default function Investments() {
   const [funds, setFunds] = useState<Fund[]>([])
 
   useEffect(() => {
@@ -14,11 +21,10 @@ export default function Landing() {
   return (
     <div className="landing">
       <section className="hero">
-        <h1>Invest in your future, in minutes</h1>
+        <h1>Managed Funds</h1>
         <p>
-          Open a managed funds account online. Choose from our range of professionally managed
-          portfolios, start from $500, and verify your identity electronically — no paperwork,
-          no branch visit.
+          Four professionally managed portfolios, one simple application. Start from $500,
+          add to it monthly, and verify your identity entirely online.
         </p>
         <Link to="/apply" className="btn btn-primary btn-large">
           Start your application
@@ -40,6 +46,24 @@ export default function Landing() {
             </p>
           </article>
         ))}
+      </section>
+
+      <section className="how-steps" aria-label="How applying works">
+        <h2>How it works</h2>
+        <ol>
+          {STEPS.map(([title, body], index) => (
+            <li key={title}>
+              <span className="step-number">{index + 1}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <Link to="/apply" className="btn btn-primary btn-large">
+          Apply online
+        </Link>
       </section>
 
       <section className="disclaimer">

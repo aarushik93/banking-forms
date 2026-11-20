@@ -13,7 +13,7 @@ from app.database import SessionLocal
 
 log = structlog.get_logger("notifications")
 
-_BRAND = "Example Bank Investments"
+_BRAND = "Opal Bank"
 
 
 def _render(subject: str, greeting: str, lines: list[str]) -> tuple[str, str]:
@@ -21,8 +21,8 @@ def _render(subject: str, greeting: str, lines: list[str]) -> tuple[str, str]:
     paragraphs = "".join(f"<p>{line}</p>" for line in lines)
     html = (
         "<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;"
-        "color:#1a2433\">"
-        f"<h2 style=\"color:#0d3b66\">{_BRAND}</h2>"
+        "color:#16222f\">"
+        f"<h2 style=\"color:#0b1f3a\">{_BRAND}</h2>"
         f"<p>{greeting}</p>{paragraphs}"
         f"<p style=\"color:#6b7686;font-size:12px\">This mailbox is not monitored. "
         "If you did not make this application, contact us immediately.</p></div>"
