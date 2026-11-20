@@ -45,8 +45,15 @@ docker compose up --build
 - Back office: http://localhost:8080/admin (token = `ADMIN_API_TOKEN`, default `change-me`)
 - API docs (non-prod): http://localhost:8000/docs
 
-**Demo the three KYC outcomes** (mock provider): apply with surname `Refer` → goes to review
-(decide it in the back office), surname `Reject` → declined, anything else → approved.
+**Demo the KYC outcomes**: apply with surname `Refer` → goes to review (decide it in the
+back office), `Reject` → declined, `Fault` → simulated provider failure (application stays
+retryable), anything else → approved.
+
+Out of the box, compose runs the **real IDMatrix SOAP adapter** against a bundled mock
+IDMatrix service (`mock-services/idmatrix/`) that speaks the vedaxml wire format — WS-Security
+auth, IDMatrix response XML, SOAP faults — so the whole integration path is exercised without
+Equifax access. Going live is config-only: point `IDMATRIX_URL`/`IDMATRIX_USERNAME`/
+`IDMATRIX_PASSWORD` at Equifax instead of the mock.
 
 ## Local development
 
@@ -93,6 +100,11 @@ Endpoints: test `https://ctaau.vedaxml.com/cta/sys2/idmatrix-v4`, production
 come from your Equifax account manager / [developer.equifax.com.au](https://developer.equifax.com.au);
 align any tenant-specific schema details (consent elements, reason-for-enquiry codes) against
 the sample XML there.
+
+Until Equifax access is provisioned, `mock-services/idmatrix/` provides a wire-compatible
+stand-in (used by default in Docker Compose): same SOAP envelope in, same response XML out,
+including auth faults on wrong credentials. Production refuses to boot if the mock's URL or
+demo credentials are still configured.
 
 ### Experian integration (alternative)
 

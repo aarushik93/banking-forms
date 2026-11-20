@@ -70,10 +70,13 @@ def validate_production_settings(settings: Settings) -> None:
         settings.experian_client_id and settings.experian_client_secret
     ):
         problems.append("Experian credentials are required when KYC_PROVIDER=experian")
-    if settings.kyc_provider == "idmatrix" and not (
-        settings.idmatrix_username and settings.idmatrix_password
-    ):
-        problems.append("IDMatrix credentials are required when KYC_PROVIDER=idmatrix")
+    if settings.kyc_provider == "idmatrix":
+        if not (settings.idmatrix_username and settings.idmatrix_password):
+            problems.append("IDMatrix credentials are required when KYC_PROVIDER=idmatrix")
+        if "idmatrix-mock" in settings.idmatrix_url or settings.idmatrix_username == "idm-demo":
+            problems.append(
+                "The bundled IDMatrix mock endpoint/credentials must not be used in prod"
+            )
     if settings.email_provider != "sendgrid":
         problems.append("EMAIL_PROVIDER=sendgrid is required in prod")
     if settings.email_provider == "sendgrid" and not settings.sendgrid_api_key:
