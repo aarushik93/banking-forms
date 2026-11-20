@@ -11,24 +11,59 @@ const COMING_SOON = [
   },
 ]
 
+function PortfolioCard() {
+  return (
+    <div className="hero-card" aria-hidden="true">
+      <div className="hero-card-head">
+        <span className="hero-card-label">Portfolio value</span>
+        <span className="hero-card-badge">▲ 6.4% this year</span>
+      </div>
+      <div className="hero-card-balance">$24,836.22</div>
+      <svg viewBox="0 0 320 84" role="presentation">
+        <path
+          d="M0 66 C 24 60, 40 68, 62 56 S 104 34, 128 40 S 172 46, 196 32 S 244 16, 268 22 S 304 10, 320 14 L 320 84 L 0 84 Z"
+          fill="#0f766e"
+          opacity="0.09"
+        />
+        <path
+          d="M0 66 C 24 60, 40 68, 62 56 S 104 34, 128 40 S 172 46, 196 32 S 244 16, 268 22 S 304 10, 320 14"
+          fill="none"
+          stroke="#0f766e"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="hero-card-funds">
+        <span>Balanced Growth</span>
+        <span>Global Equity Index</span>
+        <span>+ $250 monthly</span>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   return (
     <div className="home">
       <section className="hero-bank">
-        <p className="hero-eyebrow">Opal Bank Investments</p>
-        <h1>Invest with clarity.</h1>
-        <p>
-          Professionally managed portfolios with transparent fees and fully digital
-          onboarding. Open your account online — identity verified electronically,
-          no paperwork, no branch visits.
-        </p>
-        <div className="hero-ctas">
-          <Link to="/investments" className="btn btn-primary btn-large">
-            View managed funds
-          </Link>
-          <Link to="/apply" className="btn btn-secondary btn-large">
-            Apply online
-          </Link>
+        <div className="hero-inner">
+          <div>
+            <p className="hero-eyebrow">Opal Bank Investments</p>
+            <h1>Invest with clarity.</h1>
+            <p className="hero-sub">
+              Professionally managed portfolios with transparent fees and fully digital
+              onboarding. Verified online, invested in minutes — no paperwork, no branches.
+            </p>
+            <div className="hero-ctas">
+              <Link to="/apply" className="btn btn-cream btn-large">
+                Apply online
+              </Link>
+              <Link to="/investments" className="btn btn-outline-cream btn-large">
+                View managed funds
+              </Link>
+            </div>
+          </div>
+          <PortfolioCard />
         </div>
       </section>
 
@@ -63,7 +98,7 @@ export default function Home() {
                   Apply now
                 </Link>
                 <Link to="/investments" className="link-button">
-                  Learn more
+                  Learn more →
                 </Link>
               </div>
             </article>

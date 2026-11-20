@@ -41,13 +41,36 @@ export default function App() {
         </Routes>
       </main>
       <footer className="site-footer">
-        <p className="footer-brand">
-          <span className="brand-gem" aria-hidden="true">
-            ◆
-          </span>
-          Opal Bank
-        </p>
-        <p>
+        <div className="footer-grid">
+          <div className="footer-col footer-col--brand">
+            <p className="footer-brand">
+              <span className="brand-gem" aria-hidden="true">
+                ◆
+              </span>
+              Opal Bank
+            </p>
+            <p className="footer-tag">Invest with clarity.</p>
+          </div>
+          <div className="footer-col">
+            <h4>Products</h4>
+            <Link to="/investments">Managed Funds</Link>
+            <span>Everyday Account</span>
+            <span>Home Loans</span>
+          </div>
+          <div className="footer-col">
+            <h4>Support</h4>
+            <Link to="/apply">Apply online</Link>
+            <Link to="/result">Track an application</Link>
+            <span>Help centre</span>
+          </div>
+          <div className="footer-col">
+            <h4>Legal</h4>
+            <span>Privacy policy</span>
+            <span>Terms of use</span>
+            <span>Target market determinations</span>
+          </div>
+        </div>
+        <p className="footer-disclaimer">
           Opal Bank is a fictional demonstration platform and not a real financial institution.
           Nothing here is financial advice, and no real accounts are opened. Capital at risk.
         </p>
