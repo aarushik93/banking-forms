@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { api, ApiError } from '../api'
+import { ProcessingScreen } from '../components/ProcessingScreen'
 import { Stepper } from '../components/Stepper'
 import { clearSession, loadSession, saveSession, type Session } from '../storage'
 import { AddressStep } from '../steps/AddressStep'
@@ -46,6 +47,7 @@ export default function ApplyWizard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [emailVerified, setEmailVerified] = useState(false)
+  const [processing, setProcessing] = useState(false)
 
   const hydrate = useCallback((view: ApplicationView) => {
     // The API returns values that already passed backend validation, so the
@@ -147,11 +149,20 @@ export default function ApplyWizard() {
     if (!session) return
     setSaving(true)
     setError(null)
+    setProcessing(true)
+    window.scrollTo(0, 0)
+    // Keep the processing screen up for a minimum beat so the decisioning
+    // stages are legible even when the checks come back quickly.
+    const startedAt = Date.now()
+    const MIN_PROCESSING_MS = 4500
     try {
       await api.updateDraft(session.id, session.resumeToken, { declarations })
       const result = await api.submit(session.id, session.resumeToken)
+      const remaining = MIN_PROCESSING_MS - (Date.now() - startedAt)
+      if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining))
       navigate('/result', { state: result })
     } catch (e) {
+      setProcessing(false)
       setError(describeError(e, 'We could not submit your application. Please try again.'))
     } finally {
       setSaving(false)
@@ -167,6 +178,14 @@ export default function ApplyWizard() {
     return (
       <div className="page-card">
         <p className="loading">Preparing your application…</p>
+      </div>
+    )
+  }
+
+  if (processing) {
+    return (
+      <div className="page-card">
+        <ProcessingScreen />
       </div>
     )
   }

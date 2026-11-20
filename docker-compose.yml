@@ -63,6 +63,9 @@ services:
       # ACCEPT keeps demos friction-free; REFER mimics a real bureau's
       # treatment of identities it holds no records for.
       MOCK_DEFAULT_OUTCOME: ${MOCK_DEFAULT_OUTCOME:-ACCEPT}
+      # Simulated bureau processing time (set MOCK_MAX_LATENCY_MS=0 to disable)
+      MOCK_MIN_LATENCY_MS: ${MOCK_MIN_LATENCY_MS:-1200}
+      MOCK_MAX_LATENCY_MS: ${MOCK_MAX_LATENCY_MS:-2800}
 
   frontend:
     build: ./frontend

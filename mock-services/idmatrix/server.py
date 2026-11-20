@@ -19,7 +19,9 @@ Stdlib only — no dependencies.
 
 import json
 import os
+import random
 import re
+import time
 import uuid
 import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -30,6 +32,9 @@ USERNAME = os.environ.get("MOCK_IDMATRIX_USERNAME", "idm-demo")
 PASSWORD = os.environ.get("MOCK_IDMATRIX_PASSWORD", "idm-demo-password")
 PORT = int(os.environ.get("PORT", "8700"))
 DEFAULT_OUTCOME = os.environ.get("MOCK_DEFAULT_OUTCOME", "ACCEPT").upper()
+# Simulated bureau processing time — real IDMatrix calls take a few seconds.
+MIN_LATENCY_MS = int(os.environ.get("MOCK_MIN_LATENCY_MS", "1200"))
+MAX_LATENCY_MS = int(os.environ.get("MOCK_MAX_LATENCY_MS", "2800"))
 
 RESPONSE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
@@ -195,6 +200,9 @@ class Handler(BaseHTTPRequestHandler):
         if _find_text(root, "Username") != USERNAME or _find_text(root, "Password") != PASSWORD:
             self._fault("Authentication failed")
             return
+
+        if MAX_LATENCY_MS > 0:
+            time.sleep(random.uniform(MIN_LATENCY_MS, MAX_LATENCY_MS) / 1000)
 
         if (_find_text(root, "family-name") or "").upper() == "FAULT":
             self._fault("Simulated downstream failure")

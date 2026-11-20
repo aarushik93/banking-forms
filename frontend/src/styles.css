@@ -772,6 +772,64 @@ h3 {
   margin-bottom: 1rem;
 }
 
+/* Submission processing */
+
+.processing {
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+
+.processing h2 {
+  margin-top: 1.25rem;
+}
+
+.processing-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border: 4px solid var(--line);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.processing-stages {
+  list-style: none;
+  padding: 0;
+  margin: 1.75rem auto 0;
+  max-width: 420px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.processing-stages li {
+  padding: 0.4rem 0.75rem;
+  border-left: 3px solid var(--line);
+  color: var(--muted);
+}
+
+.processing-stages .stage--done {
+  border-left-color: var(--success);
+  color: var(--success);
+}
+
+.processing-stages .stage--active {
+  border-left-color: var(--teal);
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .otp-debug {
   background: #fff8e1;
   border: 1px dashed #d4a72c;
