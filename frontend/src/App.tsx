@@ -5,6 +5,7 @@ import ApplyWizard from './pages/ApplyWizard'
 import Home from './pages/Home'
 import Investments from './pages/Investments'
 import Result from './pages/Result'
+import Track from './pages/Track'
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/investments" element={<Investments />} />
           <Route path="/apply" element={<ApplyWizard />} />
           <Route path="/result" element={<Result />} />
+          <Route path="/track" element={<Track />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>
@@ -60,7 +62,7 @@ export default function App() {
           <div className="footer-col">
             <h4>Support</h4>
             <Link to="/apply">Apply online</Link>
-            <Link to="/result">Track an application</Link>
+            <Link to="/track">Track an application</Link>
             <span>Help centre</span>
           </div>
           <div className="footer-col">

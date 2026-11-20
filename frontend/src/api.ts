@@ -8,6 +8,7 @@ import type {
   EmailOtpSend,
   Fund,
   SubmitResponse,
+  TrackResult,
 } from './types'
 
 // On Render the static site talks to the API's own origin (VITE_API_BASE);
@@ -58,6 +59,12 @@ export const api = {
       method: 'PUT',
       headers: resumeHeaders(token),
       body: JSON.stringify(sections),
+    }),
+
+  track: (reference: string, email: string, dateOfBirth: string) =>
+    request<TrackResult>('/applications/track', {
+      method: 'POST',
+      body: JSON.stringify({ reference, email, date_of_birth: dateOfBirth }),
     }),
 
   lookupBsb: (bsb: string) => request<BsbLookup>(`/lookups/bsb/${encodeURIComponent(bsb)}`),

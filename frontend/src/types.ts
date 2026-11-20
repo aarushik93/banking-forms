@@ -108,6 +108,13 @@ export interface SubmitResponse {
   message: string
 }
 
+export interface TrackResult {
+  reference: string
+  status: ApplicationStatus
+  submitted_at: string | null
+  decided_at: string | null
+}
+
 export interface AdminSummary {
   id: string
   reference: string

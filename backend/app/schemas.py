@@ -168,6 +168,19 @@ class ApplicationView(BaseModel):
     submitted_at: datetime | None
 
 
+class TrackRequest(BaseModel):
+    reference: str = Field(min_length=5, max_length=20)
+    email: EmailStr
+    date_of_birth: date
+
+
+class TrackResponse(BaseModel):
+    reference: str
+    status: str
+    submitted_at: datetime | None
+    decided_at: datetime | None
+
+
 class SubmitResponse(BaseModel):
     id: UUID
     reference: str

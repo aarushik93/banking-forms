@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -79,6 +80,38 @@ def create_application(db: Annotated[Session, Depends(get_db)]) -> schemas.Appli
         id=application.id,
         reference=application.reference,
         resume_token=application.resume_token,
+    )
+
+
+@router.post(
+    "/track",
+    response_model=schemas.TrackResponse,
+    dependencies=[Depends(rate_limit)],
+)
+def track_application(
+    payload: schemas.TrackRequest, db: Annotated[Session, Depends(get_db)]
+) -> schemas.TrackResponse:
+    application = db.scalar(
+        select(models.Application).where(
+            models.Application.reference == payload.reference.strip().upper()
+        )
+    )
+    # Identical response for unknown reference and detail mismatch, so
+    # references can't be probed for whose they are.
+    if (
+        application is None
+        or (application.email or "").lower() != payload.email.lower()
+        or application.date_of_birth != payload.date_of_birth
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="We couldn't find an application matching those details",
+        )
+    return schemas.TrackResponse(
+        reference=application.reference,
+        status=application.status,
+        submitted_at=application.submitted_at,
+        decided_at=application.decided_at,
     )
 
 

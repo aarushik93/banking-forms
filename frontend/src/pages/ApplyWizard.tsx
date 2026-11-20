@@ -91,15 +91,21 @@ export default function ApplyWizard() {
           try {
             const view = await api.getApplication(existing.id, existing.resumeToken)
             if (cancelled) return
-            if (view.status !== 'DRAFT') {
+            if (view.status === 'DRAFT') {
+              setSession(existing)
+              setReference(view.reference)
+              hydrate(view)
+              setLoading(false)
+              return
+            }
+            if (view.status === 'SUBMITTED') {
+              // Identity checks didn't complete — the result page offers retry.
               navigate('/result')
               return
             }
-            setSession(existing)
-            setReference(view.reference)
-            hydrate(view)
-            setLoading(false)
-            return
+            // Decided applications are done: start fresh. Status stays
+            // available via /track with the emailed reference.
+            clearSession()
           } catch {
             clearSession()
           }
