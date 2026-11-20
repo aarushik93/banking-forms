@@ -1500,11 +1500,3 @@ h3 {
   font-weight: 600;
 }
 
-.otp-debug {
-  background: #fff8e1;
-  border: 1px dashed #d4a72c;
-  border-radius: 6px;
-  padding: 0.5rem 0.8rem;
-  font-size: 0.85rem;
-  color: #6b5200;
-}

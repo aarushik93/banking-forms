@@ -17,7 +17,6 @@ export function EmailVerifyStep({ email, verified, onSend, onConfirm, onContinue
   const [error, setError] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
   const [cooldown, setCooldown] = useState(0)
-  const [debugCode, setDebugCode] = useState<string | null>(null)
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -32,7 +31,6 @@ export function EmailVerifyStep({ email, verified, onSend, onConfirm, onContinue
       const result = await onSend()
       setSent(true)
       setCooldown(result.resend_in)
-      setDebugCode(result.debug_code)
     } catch {
       setError('We could not send the code. Please try again shortly.')
     } finally {
@@ -112,11 +110,6 @@ export function EmailVerifyStep({ email, verified, onSend, onConfirm, onContinue
               />
             </label>
           </div>
-          {debugCode && (
-            <p className="otp-debug">
-              Dev mode — email delivery is simulated; your code is <strong>{debugCode}</strong>
-            </p>
-          )}
           <div className="otp-actions">
             <button
               type="button"
