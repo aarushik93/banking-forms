@@ -95,7 +95,10 @@ class EquifaxIdMatrixProvider:
         password: str,
         reason_for_enquiry: str = "Account opening",
         client: httpx.Client | None = None,
-        max_attempts: int = 3,
+        # Generous retry budget (~45s worst case): hosted dependencies can be
+        # cold-starting or briefly 502ing behind a proxy, and an applicant
+        # mid-submission is worth waiting for.
+        max_attempts: int = 8,
         backoff_seconds: float = 0.5,
     ) -> None:
         self._url = url
@@ -221,7 +224,7 @@ class EquifaxIdMatrixProvider:
         envelope = self._build_envelope(applicant, client_reference)
         retryer = Retrying(
             stop=stop_after_attempt(self._max_attempts),
-            wait=wait_exponential(multiplier=self._backoff_seconds, max=5),
+            wait=wait_exponential(multiplier=self._backoff_seconds, max=15),
             retry=retry_if_exception(_is_retryable),
             reraise=True,
         )
