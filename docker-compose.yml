@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bank}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bank}
+      POSTGRES_DB: ${POSTGRES_DB:-bankforms}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bank} -d ${POSTGRES_DB:-bankforms}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      ENV: ${ENV:-dev}
+      LOG_JSON: "true"
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-bank}:${POSTGRES_PASSWORD:-bank}@db:5432/${POSTGRES_DB:-bankforms}
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-change-me}
+      KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      EXPERIAN_BASE_URL: ${EXPERIAN_BASE_URL:-https://sandbox-uk-api.experian.com}
+      EXPERIAN_CLIENT_ID: ${EXPERIAN_CLIENT_ID:-}
+      EXPERIAN_CLIENT_SECRET: ${EXPERIAN_CLIENT_SECRET:-}
+      EXPERIAN_USERNAME: ${EXPERIAN_USERNAME:-}
+      EXPERIAN_PASSWORD: ${EXPERIAN_PASSWORD:-}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-investments@example-bank.test}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Example Bank Investments}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://localhost:5173}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  dbdata:
