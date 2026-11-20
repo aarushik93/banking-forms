@@ -45,9 +45,12 @@ docker compose up --build
 - Back office: http://localhost:8080/admin (token = `ADMIN_API_TOKEN`, default `change-me`)
 - API docs (non-prod): http://localhost:8000/docs
 
-**Demo the KYC outcomes** — the mock bureau holds seeded test personas (like a real IDV
-sandbox); apply as one of them (name + date of birth + postcode must all match their record,
-any address on that postcode works) to trigger their scenario:
+**Demo the KYC outcomes** — the mock bureau holds **200 seeded test personas** (like a real
+IDV sandbox): 10 scripted scenarios below plus 190 deterministically generated records with a
+realistic outcome mix (~80% accept, ~12% refer, ~8% reject). Browse the full data dictionary
+at **http://localhost:8700/personas**. Apply as a persona (name + date of birth + postcode
+must all match their record; any street address on that postcode works) to trigger their
+scenario:
 
 | Persona | DOB | Postcode | Scenario | Outcome |
 | --- | --- | --- | --- | --- |

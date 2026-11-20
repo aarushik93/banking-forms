@@ -17,13 +17,14 @@ Behaviour (like a real bureau sandbox, see personas.py for the records):
 Stdlib only — no dependencies.
 """
 
+import json
 import os
 import re
 import uuid
 import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from personas import find_persona
+from personas import ALL_PERSONAS, find_persona
 
 USERNAME = os.environ.get("MOCK_IDMATRIX_USERNAME", "idm-demo")
 PASSWORD = os.environ.get("MOCK_IDMATRIX_PASSWORD", "idm-demo-password")
@@ -148,14 +149,36 @@ class Handler(BaseHTTPRequestHandler):
     def _fault(self, message: str) -> None:
         self._send(500, FAULT_TEMPLATE.format(message=message))
 
+    def _send_json(self, payload: object) -> None:
+        body = json.dumps(payload, indent=2).encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self) -> None:
         if self.path == "/healthz":
-            body = b'{"status": "ok"}'
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            self._send_json({"status": "ok"})
+        elif self.path.rstrip("/") == "/personas":
+            # Sandbox data dictionary: every identity this mock bureau holds.
+            self._send_json(
+                [
+                    {
+                        "first_name": p["first_name"],
+                        "last_name": p["last_name"],
+                        "date_of_birth": p["date_of_birth"],
+                        "suburb": p.get("suburb", ""),
+                        "state": p.get("state", ""),
+                        "postcode": p["postcode"],
+                        "expected_outcome": p["outcome"],
+                        "watchlist": p["watchlist"],
+                        "points": p["points"],
+                        "scenario": p["scenario"],
+                    }
+                    for p in ALL_PERSONAS
+                ]
+            )
         else:
             self.send_response(404)
             self.end_headers()

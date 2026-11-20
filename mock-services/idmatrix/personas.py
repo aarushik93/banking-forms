@@ -172,10 +172,171 @@ PERSONAS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# Generated personas: the scripted scenarios above stay canonical; the rest of
+# the bureau is generated DETERMINISTICALLY (fixed seed) so every restart holds
+# the same records. Browse them via GET /personas on the mock service.
+# ---------------------------------------------------------------------------
+
+import random
+from datetime import date, timedelta
+
+_FIRST_NAMES = (
+    "James", "Olivia", "Liam", "Mia", "Ethan", "Ava", "Lucas", "Zoe", "Henry",
+    "Ruby", "Mason", "Chloe", "Leo", "Harper", "Alexander", "Evie", "Daniel",
+    "Matilda", "Samuel", "Willow", "Thomas", "Ivy", "Max", "Isabelle", "Hugo",
+    "Freya", "Archie", "Stella", "Nathan", "Hannah", "Minh", "Linh", "Wei",
+    "Mei", "Raj", "Priya", "Arjun", "Ananya", "Yusuf", "Fatima", "Omar",
+    "Layla", "Dimitra", "Nikos", "Giulia", "Marco", "Elena", "Stefan", "Ingrid",
+    "Lars", "Keiko", "Hiroshi", "Sione", "Talia", "Kiri", "Manaia", "Bronte",
+    "Lachlan", "Sienna", "Callum",
+)
+
+_LAST_NAMES = (
+    "Harris", "Walker", "Robinson", "Baker", "King", "Scott", "Mitchell",
+    "Carter", "Turner", "Phillips", "Campbell", "Evans", "Collins", "Bennett",
+    "Murphy", "Bailey", "Cooper", "Richardson", "Cox", "Ward", "Tran", "Pham",
+    "Le", "Hoang", "Wang", "Li", "Zhang", "Liu", "Singh", "Kaur", "Sharma",
+    "Gupta", "Ali", "Hassan", "Ibrahim", "Khan", "Papadopoulos", "Georgiou",
+    "Rossi", "Ferrari", "Romano", "Costa", "Silva", "Santos", "Kowalski",
+    "Novak", "Andersen", "Johansson", "Tanaka", "Sato", "Fonoti", "Ngata",
+    "Te Rangi", "Dubois", "Moreau", "Schmidt", "Weber", "Van Der Berg",
+    "O'Sullivan", "McGregor", "MacDonald", "Fraser", "Byrne", "Gallagher",
+)
+
+_LOCALITIES = (
+    ("2000", "Sydney", "NSW"), ("2010", "Surry Hills", "NSW"),
+    ("2026", "Bondi", "NSW"), ("2060", "North Sydney", "NSW"),
+    ("2089", "Neutral Bay", "NSW"), ("2150", "Parramatta", "NSW"),
+    ("2217", "Kogarah", "NSW"), ("2300", "Newcastle", "NSW"),
+    ("2500", "Wollongong", "NSW"), ("2600", "Canberra", "ACT"),
+    ("2601", "Acton", "ACT"), ("3000", "Melbourne", "VIC"),
+    ("3008", "Docklands", "VIC"), ("3039", "Moonee Ponds", "VIC"),
+    ("3053", "Carlton", "VIC"), ("3121", "Richmond", "VIC"),
+    ("3182", "St Kilda", "VIC"), ("3550", "Bendigo", "VIC"),
+    ("4000", "Brisbane", "QLD"), ("4006", "Newstead", "QLD"),
+    ("4217", "Surfers Paradise", "QLD"), ("4350", "Toowoomba", "QLD"),
+    ("4870", "Cairns", "QLD"), ("5000", "Adelaide", "SA"),
+    ("5006", "North Adelaide", "SA"), ("6000", "Perth", "WA"),
+    ("6160", "Fremantle", "WA"), ("7000", "Hobart", "TAS"),
+    ("7250", "Launceston", "TAS"), ("0800", "Darwin", "NT"),
+)
+
+_REFER_SCENARIOS = (
+    ("Thin file: single-source match only",
+     {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": NOT_FOUND,
+      "DVS_DRIVERS_LICENCE": NOT_FOUND}, "CLEAR"),
+    ("Recently moved: address disagrees with bureau records",
+     {"CREDIT_HEADER": MISMATCH, "ELECTORAL_ROLL": VERIFIED,
+      "DVS_DRIVERS_LICENCE": NOT_CHECKED}, "CLEAR"),
+    ("Name and DOB verified but no address history",
+     {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": NOT_FOUND,
+      "DVS_DRIVERS_LICENCE": NOT_CHECKED}, "CLEAR"),
+    ("Fully verified but PEP hit -> enhanced due diligence",
+     {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": VERIFIED,
+      "DVS_DRIVERS_LICENCE": VERIFIED}, "PEP"),
+    ("Possible name variation (maiden/married name)",
+     {"CREDIT_HEADER": MISMATCH, "ELECTORAL_ROLL": MISMATCH,
+      "DVS_DRIVERS_LICENCE": NOT_CHECKED}, "CLEAR"),
+)
+
+_REJECT_SCENARIOS = (
+    ("Identity verified but sanctions list hit",
+     {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": VERIFIED,
+      "DVS_PASSPORT": VERIFIED}, "SANCTIONS"),
+    ("Deceased flag on the credit header",
+     {"CREDIT_HEADER": "DECEASED_FLAG", "ELECTORAL_ROLL": NOT_FOUND,
+      "DVS_DRIVERS_LICENCE": NOT_CHECKED}, "CLEAR"),
+    ("Fraud alert registered against this identity",
+     {"CREDIT_HEADER": "FRAUD_ALERT", "ELECTORAL_ROLL": MISMATCH,
+      "DVS_DRIVERS_LICENCE": NOT_FOUND}, "CLEAR"),
+)
+
+_ACCEPT_SOURCES = (
+    {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": VERIFIED,
+     "DVS_DRIVERS_LICENCE": VERIFIED},
+    {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": VERIFIED,
+     "DVS_DRIVERS_LICENCE": NOT_CHECKED},
+    {"CREDIT_HEADER": VERIFIED, "ELECTORAL_ROLL": NOT_CHECKED,
+     "DVS_PASSPORT": VERIFIED},
+)
+
+
+def _generate(count: int, seed: int = 42) -> list[dict]:
+    rng = random.Random(seed)
+    taken = {(p["first_name"].lower(), p["last_name"].lower()) for p in PERSONAS}
+    taken.update({("any", "refer"), ("any", "reject"), ("any", "fault")})
+    generated: list[dict] = []
+    while len(generated) < count:
+        first = rng.choice(_FIRST_NAMES)
+        last = rng.choice(_LAST_NAMES)
+        if (first.lower(), last.lower()) in taken or last.upper() in {
+            "REFER", "REJECT", "FAULT",
+        }:
+            continue
+        taken.add((first.lower(), last.lower()))
+        dob = date(1946, 1, 1) + timedelta(days=rng.randrange(0, 365 * 60))
+        postcode, suburb, state = rng.choice(_LOCALITIES)
+        roll = rng.random()
+        if roll < 0.82:  # realistic eIDV pass rates sit around 80-90%
+            scenario = "Clean electronic verification"
+            sources = rng.choice(_ACCEPT_SOURCES)
+            outcome, watchlist = "ACCEPT", "CLEAR"
+            points = rng.randrange(280, 401)
+        elif roll < 0.94:
+            scenario, sources, watchlist = rng.choice(_REFER_SCENARIOS)
+            outcome = "REFER"
+            points = rng.randrange(280, 341) if watchlist == "PEP" else rng.randrange(100, 261)
+        else:
+            scenario, sources, watchlist = rng.choice(_REJECT_SCENARIOS)
+            outcome = "REJECT"
+            points = (
+                rng.randrange(280, 341)
+                if watchlist == "SANCTIONS"
+                else rng.randrange(0, 121)
+            )
+        generated.append(
+            {
+                "first_name": first,
+                "last_name": last,
+                "date_of_birth": dob.isoformat(),
+                "postcode": postcode,
+                "suburb": suburb,
+                "state": state,
+                "outcome": outcome,
+                "points": points,
+                "watchlist": watchlist,
+                "sources": sources,
+                "scenario": scenario,
+            }
+        )
+    return generated
+
+
+_SCRIPTED_LOCALITIES = {
+    "2000": ("Sydney", "NSW"),
+    "3000": ("Melbourne", "VIC"),
+    "4000": ("Brisbane", "QLD"),
+    "5000": ("Adelaide", "SA"),
+    "6000": ("Perth", "WA"),
+    "2150": ("Parramatta", "NSW"),
+    "3182": ("St Kilda", "VIC"),
+    "2010": ("Surry Hills", "NSW"),
+    "2300": ("Newcastle", "NSW"),
+    "2600": ("Canberra", "ACT"),
+}
+for _p in PERSONAS:
+    _suburb, _state = _SCRIPTED_LOCALITIES[_p["postcode"]]
+    _p.setdefault("suburb", _suburb)
+    _p.setdefault("state", _state)
+
+ALL_PERSONAS: list[dict] = PERSONAS + _generate(190)
+
+
 def find_persona(first_name: str, last_name: str) -> dict | None:
     first = first_name.strip().lower()
     last = last_name.strip().lower()
-    for persona in PERSONAS:
+    for persona in ALL_PERSONAS:
         if persona["first_name"].lower() == first and persona["last_name"].lower() == last:
             return persona
     return None

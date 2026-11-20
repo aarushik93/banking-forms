@@ -55,6 +55,9 @@ services:
   idmatrix-mock:
     build: ./mock-services/idmatrix
     restart: unless-stopped
+    ports:
+      # Browse the seeded bureau records: http://localhost:8700/personas
+      - "${IDMATRIX_MOCK_PORT:-8700}:8700"
     environment:
       # ACCEPT keeps demos friction-free; REFER mimics a real bureau's
       # treatment of identities it holds no records for.
