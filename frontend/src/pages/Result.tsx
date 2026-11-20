@@ -11,6 +11,20 @@ interface Outcome {
   message?: string
 }
 
+const TIMELINES: Record<string, Array<[string, string]>> = {
+  APPROVED: [
+    ['Application approved', 'Today'],
+    ['Welcome email with your account details', 'Within a few minutes'],
+    ['Direct debit request sent to your bank', '1–2 business days'],
+    ['First investment placed', '3–5 business days'],
+  ],
+  IN_REVIEW: [
+    ['Application received', 'Today'],
+    ['Specialist review', 'Within 2 business days'],
+    ['Outcome confirmed by email', 'As soon as review completes'],
+  ],
+}
+
 const COPY: Record<string, { icon: string; title: string; body: string }> = {
   APPROVED: {
     icon: '✓',
@@ -75,36 +89,57 @@ export default function Result() {
 
   if (!outcome) {
     return (
-      <div className="page-card">
-        <p className="loading">Checking your application…</p>
+      <div className="wizard-shell">
+        <div className="wizard-inner page-card">
+          <p className="loading">Checking your application…</p>
+        </div>
       </div>
     )
   }
 
   const copy = COPY[outcome.status] ?? COPY.IN_REVIEW
+  const timeline = TIMELINES[outcome.status]
 
   return (
-    <div className="page-card result">
-      <div className={`result-icon result-icon--${outcome.status.toLowerCase()}`}>{copy.icon}</div>
-      <h1>{copy.title}</h1>
-      <p className="result-reference">
-        Application reference <strong>{outcome.reference}</strong>
-      </p>
-      <p>{copy.body}</p>
-      {outcome.status === 'SUBMITTED' && (
-        <button className="btn btn-primary" onClick={() => void retrySubmit()} disabled={retrying}>
-          {retrying ? 'Submitting…' : 'Try again'}
+    <div className="wizard-shell">
+      <div className="wizard-inner page-card result">
+        <div className={`result-icon result-icon--${outcome.status.toLowerCase()}`}>
+          {copy.icon}
+        </div>
+        <h1>{copy.title}</h1>
+        <p className="result-reference">
+          Application reference <strong>{outcome.reference}</strong>
+        </p>
+        <p>{copy.body}</p>
+        {timeline && (
+          <ol className="result-timeline">
+            {timeline.map(([title, when]) => (
+              <li key={title}>
+                <strong>{title}</strong>
+                <span>{when}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+        {outcome.status === 'SUBMITTED' && (
+          <button
+            className="btn btn-primary"
+            onClick={() => void retrySubmit()}
+            disabled={retrying}
+          >
+            {retrying ? 'Submitting…' : 'Try again'}
+          </button>
+        )}
+        <button
+          className="btn btn-ghost"
+          onClick={() => {
+            clearSession()
+            navigate('/')
+          }}
+        >
+          Start a new application
         </button>
-      )}
-      <button
-        className="btn btn-ghost"
-        onClick={() => {
-          clearSession()
-          navigate('/')
-        }}
-      >
-        Start a new application
-      </button>
+      </div>
     </div>
   )
 }

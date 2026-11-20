@@ -11,6 +11,16 @@ const STEPS = [
   ['Start investing', 'Approved applications are funded by direct debit and invested.'],
 ]
 
+function RiskDots({ level }: { level: number }) {
+  return (
+    <span className="risk-dots" aria-hidden="true">
+      {Array.from({ length: 7 }, (_, i) => (
+        <span key={i} className={`risk-dot${i < level ? ' risk-dot--on' : ''}`} />
+      ))}
+    </span>
+  )
+}
+
 export default function Investments() {
   const [funds, setFunds] = useState<Fund[]>([])
 
@@ -20,11 +30,12 @@ export default function Investments() {
 
   return (
     <div className="landing">
-      <section className="hero">
-        <h1>Managed Funds</h1>
+      <section className="invest-hero">
+        <p className="eyebrow">Our funds</p>
+        <h1>Managed funds, without the management fuss.</h1>
         <p>
-          Four professionally managed portfolios, one simple application. Start from $500,
-          add to it monthly, and verify your identity entirely online.
+          Four professionally managed portfolios across the risk spectrum, one simple annual
+          charge, and a fully online application. Start from $500, add to it monthly.
         </p>
         <Link to="/apply" className="btn btn-primary btn-large">
           Start your application
@@ -35,17 +46,35 @@ export default function Investments() {
         </p>
       </section>
 
-      <section className="fund-grid" aria-label="Available funds">
-        {funds.map((fund) => (
-          <article key={fund.code} className="fund-card">
-            <div className="fund-risk">Risk {fund.risk_level}/7</div>
-            <h3>{fund.name}</h3>
-            <p>{fund.description}</p>
-            <p className="fund-charge">
-              Annual charge {Number(fund.annual_charge_pct).toFixed(2)}%
-            </p>
-          </article>
-        ))}
+      <section aria-label="Fund comparison">
+        <div className="funds-table-wrap">
+          <table className="funds-table">
+            <thead>
+              <tr>
+                <th>Fund</th>
+                <th>Risk level</th>
+                <th>Annual charge</th>
+              </tr>
+            </thead>
+            <tbody>
+              {funds.map((fund) => (
+                <tr key={fund.code}>
+                  <td>
+                    <p className="fund-name">{fund.name}</p>
+                    <p className="fund-desc">{fund.description}</p>
+                  </td>
+                  <td className="risk-cell">
+                    <RiskDots level={fund.risk_level} />
+                    {fund.risk_level}/7
+                  </td>
+                  <td className="fund-charge-cell">
+                    {Number(fund.annual_charge_pct).toFixed(2)}% p.a.
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="how-steps" aria-label="How applying works">

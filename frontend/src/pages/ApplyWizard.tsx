@@ -176,22 +176,27 @@ export default function ApplyWizard() {
 
   if (loading) {
     return (
-      <div className="page-card">
-        <p className="loading">Preparing your application…</p>
+      <div className="wizard-shell">
+        <div className="wizard-inner page-card">
+          <p className="loading">Preparing your application…</p>
+        </div>
       </div>
     )
   }
 
   if (processing) {
     return (
-      <div className="page-card">
-        <ProcessingScreen />
+      <div className="wizard-shell">
+        <div className="wizard-inner page-card">
+          <ProcessingScreen />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="wizard">
+    <div className="wizard-shell">
+      <div className="wizard wizard-inner">
       <div className="wizard-header">
         <h1>Managed funds application</h1>
         {reference && (
@@ -278,6 +283,7 @@ export default function ApplyWizard() {
             onSubmit={(v) => void submitAll(v)}
           />
         )}
+        </div>
       </div>
     </div>
   )

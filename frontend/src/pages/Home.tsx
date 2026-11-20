@@ -1,12 +1,38 @@
 import { Link } from 'react-router-dom'
 
+function Icon({ path }: { path: string }) {
+  return (
+    <svg
+      className="card-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={path} />
+    </svg>
+  )
+}
+
+const ICON_CHART = 'M3 20h18 M6 16l4-5 3 3 5-7'
+const ICON_CARD = 'M3 7h18v11H3z M3 10.5h18 M6 14.5h4'
+const ICON_HOME = 'M4 11l8-7 8 7 M6 10v10h12V10 M10 20v-5h4v5'
+const ICON_SHIELD = 'M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z'
+const ICON_CLOCK = 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3.5 2'
+const ICON_RECEIPT = 'M6 3h12v18l-2-1.4L14 21l-2-1.4L10 21l-2-1.4L6 21z M9 8h6 M9 12h6'
+
 const COMING_SOON = [
   {
     name: 'Everyday Account',
+    icon: ICON_CARD,
     description: 'No monthly account fees, instant payments and a card that works everywhere.',
   },
   {
     name: 'Home Loans',
+    icon: ICON_HOME,
     description: 'Transparent rates with a fully digital approval process.',
   },
 ]
@@ -87,6 +113,7 @@ export default function Home() {
           <h2>Our products</h2>
           <div className="product-grid">
             <article className="product-card product-card--live">
+              <Icon path={ICON_CHART} />
               <div className="product-status product-status--live">Available now</div>
               <h3>Managed Funds</h3>
               <p>
@@ -104,6 +131,7 @@ export default function Home() {
             </article>
             {COMING_SOON.map((product) => (
               <article key={product.name} className="product-card product-card--soon">
+                <Icon path={product.icon} />
                 <div className="product-status">Coming soon</div>
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
@@ -115,14 +143,17 @@ export default function Home() {
 
       <section className="trust-strip" aria-label="Why Opal Bank">
         <div>
+          <Icon path={ICON_CLOCK} />
           <h3>Verified in minutes</h3>
           <p>Electronic identity verification — no certified copies, no waiting rooms.</p>
         </div>
         <div>
+          <Icon path={ICON_SHIELD} />
           <h3>Security first</h3>
           <p>Encrypted end to end, with every decision recorded in a full audit trail.</p>
         </div>
         <div>
+          <Icon path={ICON_RECEIPT} />
           <h3>Transparent fees</h3>
           <p>One simple annual charge per fund. No entry, exit or platform fees.</p>
         </div>
