@@ -19,8 +19,16 @@ class Settings(BaseSettings):
 
     admin_api_token: str = "change-me"
 
-    # KYC / Experian CrossCore (Australia: production host is https://api.experian.com.au)
-    kyc_provider: str = "mock"  # mock | experian
+    # Identity verification provider
+    kyc_provider: str = "mock"  # mock | idmatrix | experian
+
+    # Equifax IDMatrix (Australia) — production URL: https://vedaxml.com/sys2/idmatrix-v4
+    idmatrix_url: str = "https://ctaau.vedaxml.com/cta/sys2/idmatrix-v4"
+    idmatrix_username: str = ""
+    idmatrix_password: str = ""
+    idmatrix_reason_for_enquiry: str = "Account opening"
+
+    # Experian CrossCore (Australia: production host is https://api.experian.com.au)
     experian_base_url: str = "https://sandbox-api.experian.com.au"
     experian_token_path: str = "/oauth2/v1/token"
     # The exact CrossCore endpoint and workflow are assigned during Experian onboarding;
@@ -62,6 +70,10 @@ def validate_production_settings(settings: Settings) -> None:
         settings.experian_client_id and settings.experian_client_secret
     ):
         problems.append("Experian credentials are required when KYC_PROVIDER=experian")
+    if settings.kyc_provider == "idmatrix" and not (
+        settings.idmatrix_username and settings.idmatrix_password
+    ):
+        problems.append("IDMatrix credentials are required when KYC_PROVIDER=idmatrix")
     if settings.email_provider != "sendgrid":
         problems.append("EMAIL_PROVIDER=sendgrid is required in prod")
     if settings.email_provider == "sendgrid" and not settings.sendgrid_api_key:

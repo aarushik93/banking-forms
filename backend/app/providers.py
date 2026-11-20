@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 from app.adapters.email import ConsoleEmailProvider, EmailProvider, SendGridEmailProvider
+from app.adapters.idmatrix import EquifaxIdMatrixProvider
 from app.adapters.kyc import ExperianCrossCoreProvider, KycProvider, MockKycProvider
 from app.config import get_settings
 
@@ -12,6 +13,13 @@ from app.config import get_settings
 @lru_cache
 def _kyc_singleton() -> KycProvider:
     settings = get_settings()
+    if settings.kyc_provider == "idmatrix":
+        return EquifaxIdMatrixProvider(
+            url=settings.idmatrix_url,
+            username=settings.idmatrix_username,
+            password=settings.idmatrix_password,
+            reason_for_enquiry=settings.idmatrix_reason_for_enquiry,
+        )
     if settings.kyc_provider == "experian":
         return ExperianCrossCoreProvider(
             base_url=settings.experian_base_url,

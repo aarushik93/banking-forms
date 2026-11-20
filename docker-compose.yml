@@ -22,6 +22,10 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-bank}:${POSTGRES_PASSWORD:-bank}@db:5432/${POSTGRES_DB:-bankforms}
       ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-change-me}
       KYC_PROVIDER: ${KYC_PROVIDER:-mock}
+      IDMATRIX_URL: ${IDMATRIX_URL:-https://ctaau.vedaxml.com/cta/sys2/idmatrix-v4}
+      IDMATRIX_USERNAME: ${IDMATRIX_USERNAME:-}
+      IDMATRIX_PASSWORD: ${IDMATRIX_PASSWORD:-}
+      IDMATRIX_REASON_FOR_ENQUIRY: ${IDMATRIX_REASON_FOR_ENQUIRY:-Account opening}
       EXPERIAN_BASE_URL: ${EXPERIAN_BASE_URL:-https://sandbox-api.experian.com.au}
       EXPERIAN_CLIENT_ID: ${EXPERIAN_CLIENT_ID:-}
       EXPERIAN_CLIENT_SECRET: ${EXPERIAN_CLIENT_SECRET:-}

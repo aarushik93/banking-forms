@@ -1,14 +1,14 @@
 # Banking Forms — Managed Funds Application
 
 A production-grade replacement for the bank's legacy iApply forms: customers apply online for a
-managed funds investment account, identity is verified through **Experian CrossCore (KYC)**, and
+managed funds investment account, identity is verified electronically for AML/CTF (primary
+provider: **Equifax IDMatrix**; an **Experian CrossCore** adapter is also included), and
 applicants are kept informed by **SendGrid** transactional email. Includes a token-protected
 back office for manually deciding referred applications.
 
 Localised for **Australia**: BSB + account number funding (Direct Debit Request), optional Tax
 File Number for withholding, state/postcode address capture, AUD amounts, and AML/CTF Act
-consent wording. Experian endpoints default to the AU sandbox
-(`sandbox-api.experian.com.au`; production `api.experian.com.au`).
+consent wording.
 
 ## Architecture
 
@@ -77,12 +77,24 @@ All configuration is via environment variables (see `.env.example`). Key switche
 
 | Variable | Values | Notes |
 | --- | --- | --- |
-| `KYC_PROVIDER` | `mock` / `experian` | `experian` needs the `EXPERIAN_*` credentials from your onboarding pack |
+| `KYC_PROVIDER` | `mock` / `idmatrix` / `experian` | `idmatrix` needs `IDMATRIX_USERNAME`/`IDMATRIX_PASSWORD` from Equifax; `experian` needs the `EXPERIAN_*` credentials |
 | `EMAIL_PROVIDER` | `console` / `sendgrid` | `sendgrid` needs `SENDGRID_API_KEY`; sender must be a [verified sender/domain](https://docs.sendgrid.com/ui/sending-email/sender-verification) |
 | `ADMIN_API_TOKEN` | string | Protects `/api/v1/admin/*`; must be strong (16+ chars) in prod |
 | `ENV` | `dev` / `test` / `prod` | `prod` refuses to boot with mock KYC, console email, or a weak admin token, and disables `/docs` |
 
-### Experian integration
+### Equifax IDMatrix integration (primary)
+
+`app/adapters/idmatrix.py` implements the IDMatrix v4 SOAP/XML contract: WS-Security
+UsernameToken auth, applicant submission (name, DOB, address, phone, email, consent), and
+mapping of the `overall-outcome` decision (`ACCEPT` / `REJECT`; `REFER`-family outcomes route
+to manual review). Transient 5xx/network errors retry with backoff; SOAP faults fail fast.
+Endpoints: test `https://ctaau.vedaxml.com/cta/sys2/idmatrix-v4`, production
+`https://vedaxml.com/sys2/idmatrix-v4`. Credentials and the account's verification rule set
+come from your Equifax account manager / [developer.equifax.com.au](https://developer.equifax.com.au);
+align any tenant-specific schema details (consent elements, reason-for-enquiry codes) against
+the sample XML there.
+
+### Experian integration (alternative)
 
 `app/adapters/kyc.py` implements OAuth2 token acquisition (cached, auto-refreshed on 401) and
 CrossCore transaction submit with retries/backoff on 5xx and network errors. CrossCore request
