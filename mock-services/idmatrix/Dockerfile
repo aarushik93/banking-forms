@@ -1,7 +1,7 @@
 FROM python:3.13-slim
 
 WORKDIR /srv
-COPY server.py ./
+COPY server.py personas.py ./
 RUN useradd --system --no-create-home mockuser
 USER mockuser
 

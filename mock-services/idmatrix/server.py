@@ -4,25 +4,31 @@
 Speaks the same wire format as the real service (vedaxml.com) so the
 production adapter in backend/app/adapters/idmatrix.py is exercised
 end-to-end: WS-Security UsernameToken auth, SOAP faults on bad
-credentials, and IDMatrix-shaped response XML.
+credentials, and IDMatrix-shaped response XML with per-source
+verification results, a points score, and watchlist screening.
 
-Deterministic outcomes by surname (case-insensitive):
-  REFER  -> overall-outcome REFER   (application goes to manual review)
-  REJECT -> overall-outcome REJECT  (application declined)
-  FAULT  -> SOAP fault              (exercises the adapter's fail-fast path)
-  else   -> overall-outcome ACCEPT
+Behaviour (like a real bureau sandbox, see personas.py for the records):
+1. Applicant matches a seeded persona -> that persona's scripted scenario,
+   with a wrong DOB or postcode downgrading to a partial-match REFER.
+2. Otherwise, surname triggers: REFER / REJECT / FAULT.
+3. Otherwise MOCK_DEFAULT_OUTCOME (ACCEPT by default; set REFER for
+   realistic "identity not found in any source" behaviour).
 
 Stdlib only — no dependencies.
 """
 
 import os
+import re
 import uuid
 import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from personas import find_persona
+
 USERNAME = os.environ.get("MOCK_IDMATRIX_USERNAME", "idm-demo")
 PASSWORD = os.environ.get("MOCK_IDMATRIX_PASSWORD", "idm-demo-password")
 PORT = int(os.environ.get("PORT", "8700"))
+DEFAULT_OUTCOME = os.environ.get("MOCK_DEFAULT_OUTCOME", "ACCEPT").upper()
 
 RESPONSE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
@@ -33,16 +39,25 @@ RESPONSE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
         <idm:overall-outcome>{outcome}</idm:overall-outcome>
       </idm:response-outcome>
       <idm:component-responses>
-        <idm:verification-response>
-          <idm:verification-outcome>
-            <idm:total-points>{points}</idm:total-points>
-            <idm:indicator>{outcome}</idm:indicator>
-          </idm:verification-outcome>
-        </idm:verification-response>
+        <idm:verification-outcome>
+          <idm:total-points>{points}</idm:total-points>
+          <idm:indicator>{outcome}</idm:indicator>
+        </idm:verification-outcome>
+{source_results}
+        <idm:watchlist-response>
+          <idm:watchlist-outcome>{watchlist}</idm:watchlist-outcome>
+        </idm:watchlist-response>
       </idm:component-responses>
     </idm:response>
   </env:Body>
 </env:Envelope>"""
+
+SOURCE_TEMPLATE = (
+    "        <idm:verification-response>\n"
+    "          <idm:data-source>{source}</idm:data-source>\n"
+    "          <idm:source-outcome>{outcome}</idm:source-outcome>\n"
+    "        </idm:verification-response>"
+)
 
 FAULT_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
@@ -54,7 +69,7 @@ FAULT_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
   </env:Body>
 </env:Envelope>"""
 
-OUTCOMES = {"REFER": ("REFER", 40), "REJECT": ("REJECT", 0)}
+SURNAME_TRIGGERS = {"REFER": ("REFER", 150), "REJECT": ("REJECT", 40)}
 
 
 def _find_text(root: ET.Element, local: str) -> str | None:
@@ -64,8 +79,63 @@ def _find_text(root: ET.Element, local: str) -> str | None:
     return None
 
 
+def _decide(root: ET.Element) -> dict:
+    """Return outcome, points, watchlist and per-source results for a request."""
+    family_name = _find_text(root, "family-name") or ""
+    first_name = _find_text(root, "first-given-name") or ""
+    dob = _find_text(root, "date-of-birth") or ""
+    address = _find_text(root, "unformatted-address") or ""
+    postcode_match = re.search(r"\b(\d{4})\b(?!.*\b\d{4}\b)", address)
+    postcode = postcode_match.group(1) if postcode_match else ""
+
+    persona = find_persona(first_name, family_name)
+    if persona:
+        if dob != persona["date_of_birth"] or postcode != persona["postcode"]:
+            # Right person, inconsistent data: a real bureau partial-matches.
+            return {
+                "outcome": "REFER",
+                "points": 140,
+                "watchlist": "CLEAR",
+                "sources": {
+                    "CREDIT_HEADER": "MISMATCH",
+                    "ELECTORAL_ROLL": "MISMATCH",
+                    "DVS_DRIVERS_LICENCE": "NOT_CHECKED",
+                },
+            }
+        return {
+            "outcome": persona["outcome"],
+            "points": persona["points"],
+            "watchlist": persona["watchlist"],
+            "sources": persona["sources"],
+        }
+
+    surname = family_name.strip().upper()
+    if surname in SURNAME_TRIGGERS:
+        outcome, points = SURNAME_TRIGGERS[surname]
+        return {
+            "outcome": outcome,
+            "points": points,
+            "watchlist": "CLEAR",
+            "sources": {"CREDIT_HEADER": "NOT_FOUND", "ELECTORAL_ROLL": "NOT_FOUND"},
+        }
+
+    if DEFAULT_OUTCOME == "ACCEPT":
+        return {
+            "outcome": "ACCEPT",
+            "points": 300,
+            "watchlist": "CLEAR",
+            "sources": {"CREDIT_HEADER": "VERIFIED", "ELECTORAL_ROLL": "VERIFIED"},
+        }
+    return {
+        "outcome": "REFER",
+        "points": 0,
+        "watchlist": "CLEAR",
+        "sources": {"CREDIT_HEADER": "NOT_FOUND", "ELECTORAL_ROLL": "NOT_FOUND"},
+    }
+
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = "MockIDMatrix/1.0"
+    server_version = "MockIDMatrix/2.0"
 
     def _send(self, status: int, body: str) -> None:
         payload = body.encode("utf-8")
@@ -103,19 +173,24 @@ class Handler(BaseHTTPRequestHandler):
             self._fault("Authentication failed")
             return
 
-        family_name = (_find_text(root, "family-name") or "").upper()
-        if family_name == "FAULT":
+        if (_find_text(root, "family-name") or "").upper() == "FAULT":
             self._fault("Simulated downstream failure")
             return
 
-        outcome, points = OUTCOMES.get(family_name, ("ACCEPT", 300))
+        decision = _decide(root)
+        source_results = "\n".join(
+            SOURCE_TEMPLATE.format(source=source, outcome=outcome)
+            for source, outcome in decision["sources"].items()
+        )
         self._send(
             200,
             RESPONSE_TEMPLATE.format(
                 enquiry_id=f"MOCKIDM-{uuid.uuid4().hex[:12].upper()}",
                 client_reference=_find_text(root, "client-reference") or "",
-                outcome=outcome,
-                points=points,
+                outcome=decision["outcome"],
+                points=decision["points"],
+                watchlist=decision["watchlist"],
+                source_results=source_results,
             ),
         )
 
@@ -124,5 +199,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Mock IDMatrix listening on :{PORT} (user: {USERNAME})")
+    print(
+        f"Mock IDMatrix listening on :{PORT} "
+        f"(user: {USERNAME}, default outcome: {DEFAULT_OUTCOME})"
+    )
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

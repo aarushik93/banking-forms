@@ -48,6 +48,9 @@ class KycResult:
     decision: KycDecision
     reference: str
     raw_decision: str
+    # Provider-specific decision evidence (scores, per-source results,
+    # watchlist outcome) — audit material, never PII.
+    detail: dict[str, Any] | None = None
 
 
 class KycError(Exception):

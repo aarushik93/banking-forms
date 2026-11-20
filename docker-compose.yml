@@ -55,6 +55,10 @@ services:
   idmatrix-mock:
     build: ./mock-services/idmatrix
     restart: unless-stopped
+    environment:
+      # ACCEPT keeps demos friction-free; REFER mimics a real bureau's
+      # treatment of identities it holds no records for.
+      MOCK_DEFAULT_OUTCOME: ${MOCK_DEFAULT_OUTCOME:-ACCEPT}
 
   frontend:
     build: ./frontend

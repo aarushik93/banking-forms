@@ -268,12 +268,13 @@ def submit_application(
         application.decided_at = _utcnow()
         application.decided_by = "auto"
 
-    record_event(
-        db,
-        application.id,
-        "kyc_completed",
-        {"decision": result.decision.value, "provider_reference": result.reference},
-    )
+    kyc_audit: dict = {
+        "decision": result.decision.value,
+        "provider_reference": result.reference,
+    }
+    if result.detail:
+        kyc_audit["evidence"] = result.detail
+    record_event(db, application.id, "kyc_completed", kyc_audit)
     record_event(
         db,
         application.id,

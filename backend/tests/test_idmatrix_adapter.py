@@ -42,6 +42,23 @@ def _response_xml(outcome: str) -> str:
       <idm:response-outcome>
         <idm:overall-outcome>{outcome}</idm:overall-outcome>
       </idm:response-outcome>
+      <idm:component-responses>
+        <idm:verification-outcome>
+          <idm:total-points>340</idm:total-points>
+          <idm:indicator>{outcome}</idm:indicator>
+        </idm:verification-outcome>
+        <idm:verification-response>
+          <idm:data-source>CREDIT_HEADER</idm:data-source>
+          <idm:source-outcome>VERIFIED</idm:source-outcome>
+        </idm:verification-response>
+        <idm:verification-response>
+          <idm:data-source>ELECTORAL_ROLL</idm:data-source>
+          <idm:source-outcome>VERIFIED</idm:source-outcome>
+        </idm:verification-response>
+        <idm:watchlist-response>
+          <idm:watchlist-outcome>CLEAR</idm:watchlist-outcome>
+        </idm:watchlist-response>
+      </idm:component-responses>
     </idm:response>
   </env:Body>
 </env:Envelope>"""
@@ -70,6 +87,11 @@ def test_idmatrix_accept_and_request_contents():
     result = _provider(handler).verify(APPLICANT)
     assert result.decision is KycDecision.ACCEPT
     assert result.reference == "IDM-12345"
+    assert result.detail == {
+        "total_points": 340,
+        "watchlist": "CLEAR",
+        "sources": {"CREDIT_HEADER": "VERIFIED", "ELECTORAL_ROLL": "VERIFIED"},
+    }
 
     body = captured["body"]
     assert "<wsse:Username>idm-user</wsse:Username>" in body

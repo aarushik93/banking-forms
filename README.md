@@ -45,9 +45,31 @@ docker compose up --build
 - Back office: http://localhost:8080/admin (token = `ADMIN_API_TOKEN`, default `change-me`)
 - API docs (non-prod): http://localhost:8000/docs
 
-**Demo the KYC outcomes**: apply with surname `Refer` → goes to review (decide it in the
-back office), `Reject` → declined, `Fault` → simulated provider failure (application stays
-retryable), anything else → approved.
+**Demo the KYC outcomes** — the mock bureau holds seeded test personas (like a real IDV
+sandbox); apply as one of them (name + date of birth + postcode must all match their record,
+any address on that postcode works) to trigger their scenario:
+
+| Persona | DOB | Postcode | Scenario | Outcome |
+| --- | --- | --- | --- | --- |
+| Charlotte Anderson | 1988-03-15 | 2000 | Clean three-source match (340 pts) | ✅ Approved |
+| Oliver Nguyen | 1992-11-02 | 3000 | Credit header + DVS passport | ✅ Approved |
+| Amelia Patel | 1975-06-30 | 4000 | Exactly at accept threshold (280 pts) | ✅ Approved |
+| Jack Thompson | 2001-09-12 | 5000 | Thin file — one source only | 🕐 Review |
+| Isla Fitzgerald | 1983-01-25 | 6000 | Recently moved — address mismatch | 🕐 Review |
+| William Chen | 1990-05-05 | 2150 | No address history | 🕐 Review |
+| Sofia Marino | 1979-04-19 | 3182 | Verified but PEP hit → EDD | 🕐 Review |
+| Dmitri Volkov | 1970-12-01 | 2010 | Verified but sanctions hit | ❌ Declined |
+| Noah Williams | 1958-07-08 | 2300 | Deceased flag on credit header | ❌ Declined |
+| Grace O'Connor | 1995-08-22 | 2600 | Fraud alert on identity | ❌ Declined |
+
+A matched persona with the **wrong DOB or postcode** partial-matches → review (as a real
+bureau would). The per-source results, points score, and watchlist outcome come back in the
+response and land in the application's audit trail (visible in the back office).
+
+Quick triggers still work for anyone not in the persona set: surname `Refer` → review,
+`Reject` → declined, `Fault` → simulated provider outage (application stays retryable),
+anything else → `MOCK_DEFAULT_OUTCOME` (default `ACCEPT`; set `REFER` to mimic a real
+bureau's treatment of unknown identities).
 
 Out of the box, compose runs the **real IDMatrix SOAP adapter** against a bundled mock
 IDMatrix service (`mock-services/idmatrix/`) that speaks the vedaxml wire format — WS-Security

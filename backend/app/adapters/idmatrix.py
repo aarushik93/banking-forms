@@ -158,6 +158,32 @@ class EquifaxIdMatrixProvider:
             return "unparseable fault response"
         return _find_text(root, "faultstring") or "unknown fault"
 
+    @staticmethod
+    def _extract_detail(root: ET.Element) -> dict | None:
+        """Pull decision evidence (points, per-source results, watchlist) when present."""
+        detail: dict = {}
+        points = _find_text(root, "total-points")
+        if points and points.lstrip("-").isdigit():
+            detail["total_points"] = int(points)
+        watchlist = _find_text(root, "watchlist-outcome")
+        if watchlist:
+            detail["watchlist"] = watchlist
+        sources: dict[str, str] = {}
+        for element in root.iter():
+            if _local_name(element.tag) != "verification-response":
+                continue
+            source = outcome = None
+            for child in element:
+                if _local_name(child.tag) == "data-source":
+                    source = (child.text or "").strip()
+                elif _local_name(child.tag) == "source-outcome":
+                    outcome = (child.text or "").strip()
+            if source and outcome:
+                sources[source] = outcome
+        if sources:
+            detail["sources"] = sources
+        return detail or None
+
     def _parse(self, text: str, client_reference: str) -> KycResult:
         try:
             root = ET.fromstring(text)
@@ -183,7 +209,12 @@ class EquifaxIdMatrixProvider:
             or _find_attribute(root, "enquiry-id")
             or client_reference
         )
-        return KycResult(decision=decision, reference=reference, raw_decision=raw)
+        return KycResult(
+            decision=decision,
+            reference=reference,
+            raw_decision=raw,
+            detail=self._extract_detail(root),
+        )
 
     def verify(self, applicant: KycApplicant) -> KycResult:
         client_reference = f"MFAPP-{uuid.uuid4().hex[:16].upper()}"
