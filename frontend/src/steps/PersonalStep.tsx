@@ -50,7 +50,7 @@ export function PersonalStep({ defaultValues, onNext, saving }: Props) {
           <input type="email" autoComplete="email" {...register('email')} />
         </Field>
         <Field label="Phone number" error={errors.phone?.message} hint="Include the country code">
-          <input type="tel" autoComplete="tel" placeholder="+44 7700 900123" {...register('phone')} />
+          <input type="tel" autoComplete="tel" placeholder="+61 412 345 678" {...register('phone')} />
         </Field>
       </div>
       <div className="wizard-actions">
