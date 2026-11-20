@@ -6,13 +6,19 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from app import models, schemas
+from app.adapters.account_verification import AccountVerificationProvider
 from app.adapters.email import EmailProvider
 from app.adapters.kyc import KycProvider
+from app.config import get_settings
 from app.database import get_db
 from app.dependencies import get_owned_application
-from app.providers import get_email_provider, get_kyc_provider
+from app.providers import (
+    get_account_verification_provider,
+    get_email_provider,
+    get_kyc_provider,
+)
 from app.ratelimit import rate_limit
-from app.services import application_service, notifications
+from app.services import application_service, notifications, verification
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -94,6 +100,45 @@ def update_application(
 
 
 @router.post(
+    "/{application_id}/verify-email",
+    response_model=schemas.EmailOtpSendOut,
+    dependencies=[Depends(rate_limit)],
+)
+def send_email_verification(
+    background: BackgroundTasks,
+    application: Annotated[models.Application, Depends(get_owned_application)],
+    db: Annotated[Session, Depends(get_db)],
+    email_provider: Annotated[EmailProvider, Depends(get_email_provider)],
+) -> schemas.EmailOtpSendOut:
+    settings = get_settings()
+    code = verification.start_email_verification(db, application)
+    message = verification.build_otp_email(
+        application.email or "", application.first_name or "", code
+    )
+    background.add_task(
+        notifications.send_notification, email_provider, message, application.id
+    )
+    return schemas.EmailOtpSendOut(
+        sent=True,
+        expires_in=settings.otp_expiry_seconds,
+        resend_in=settings.otp_resend_seconds,
+        # Surfacing the code outside prod keeps local demos usable with the
+        # console email provider; prod never returns it.
+        debug_code=code if settings.env != "prod" else None,
+    )
+
+
+@router.post("/{application_id}/verify-email/confirm", response_model=schemas.ApplicationView)
+def confirm_email_verification(
+    payload: schemas.EmailOtpConfirmIn,
+    application: Annotated[models.Application, Depends(get_owned_application)],
+    db: Annotated[Session, Depends(get_db)],
+) -> schemas.ApplicationView:
+    verification.confirm_email_verification(db, application, payload.code)
+    return application_service.to_view(application)
+
+
+@router.post(
     "/{application_id}/submit",
     response_model=schemas.SubmitResponse,
     dependencies=[Depends(rate_limit)],
@@ -104,8 +149,13 @@ def submit_application(
     db: Annotated[Session, Depends(get_db)],
     kyc: Annotated[KycProvider, Depends(get_kyc_provider)],
     email_provider: Annotated[EmailProvider, Depends(get_email_provider)],
+    account_verifier: Annotated[
+        AccountVerificationProvider, Depends(get_account_verification_provider)
+    ],
 ) -> schemas.SubmitResponse:
-    application = application_service.submit_application(db, application, kyc)
+    application = application_service.submit_application(
+        db, application, kyc, account_verifier
+    )
     queue_status_email(background, email_provider, application)
     return schemas.SubmitResponse(
         id=application.id,

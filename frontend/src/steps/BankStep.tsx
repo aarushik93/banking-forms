@@ -1,7 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import { api } from '../api'
 import { Field } from '../components/Field'
+import type { BsbLookup } from '../types'
 import { bankSchema, type BankValues } from '../validation'
 
 interface Props {
@@ -15,8 +18,27 @@ export function BankStep({ defaultValues, onNext, onBack, saving }: Props) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<BankValues>({ resolver: zodResolver(bankSchema), defaultValues })
+
+  const [bsbInfo, setBsbInfo] = useState<BsbLookup | null>(null)
+  const bsbValue = watch('bsb')
+
+  useEffect(() => {
+    const digits = (bsbValue ?? '').replace(/\D/g, '')
+    if (digits.length !== 6) {
+      setBsbInfo(null)
+      return
+    }
+    const timer = setTimeout(() => {
+      api
+        .lookupBsb(digits)
+        .then(setBsbInfo)
+        .catch(() => setBsbInfo(null))
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [bsbValue])
 
   return (
     <form onSubmit={handleSubmit(onNext)} noValidate>
@@ -31,6 +53,17 @@ export function BankStep({ defaultValues, onNext, onBack, saving }: Props) {
       <div className="grid-2">
         <Field label="BSB" error={errors.bsb?.message}>
           <input type="text" inputMode="numeric" placeholder="062-000" {...register('bsb')} />
+          {bsbInfo?.found && (
+            <p className="bsb-match">
+              ✓ {bsbInfo.bank_name}
+              {bsbInfo.suburb ? ` — ${bsbInfo.suburb} ${bsbInfo.state ?? ''}` : ''}
+            </p>
+          )}
+          {bsbInfo && !bsbInfo.found && bsbInfo.directory_available && (
+            <p className="bsb-warn">
+              We don't recognise this BSB — please double-check it
+            </p>
+          )}
         </Field>
         <Field label="Account number" error={errors.account_number?.message}>
           <input

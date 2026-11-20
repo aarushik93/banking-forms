@@ -1,8 +1,11 @@
 import type {
+  AddressSuggestion,
   AdminDetail,
   AdminSummary,
   ApplicationCreated,
   ApplicationView,
+  BsbLookup,
+  EmailOtpSend,
   Fund,
   SubmitResponse,
 } from './types'
@@ -52,6 +55,24 @@ export const api = {
       method: 'PUT',
       headers: resumeHeaders(token),
       body: JSON.stringify(sections),
+    }),
+
+  lookupBsb: (bsb: string) => request<BsbLookup>(`/lookups/bsb/${encodeURIComponent(bsb)}`),
+
+  suggestAddress: (q: string) =>
+    request<AddressSuggestion[]>(`/lookups/address?q=${encodeURIComponent(q)}`),
+
+  sendEmailOtp: (id: string, token: string) =>
+    request<EmailOtpSend>(`/applications/${id}/verify-email`, {
+      method: 'POST',
+      headers: resumeHeaders(token),
+    }),
+
+  confirmEmailOtp: (id: string, token: string, code: string) =>
+    request<ApplicationView>(`/applications/${id}/verify-email/confirm`, {
+      method: 'POST',
+      headers: resumeHeaders(token),
+      body: JSON.stringify({ code }),
     }),
 
   submit: (id: string, token: string) =>

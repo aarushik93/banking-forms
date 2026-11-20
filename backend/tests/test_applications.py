@@ -9,6 +9,7 @@ def test_funds_seeded(client):
 
 def test_happy_path_approved(client, emails):
     app_id, headers = create_filled_application(client)
+    emails.messages.clear()  # drop the OTP email; we assert on status emails
 
     resp = client.post(f"/api/v1/applications/{app_id}/submit", headers=headers)
     assert resp.status_code == 200, resp.text
@@ -24,6 +25,7 @@ def test_happy_path_approved(client, emails):
 
 def test_refer_goes_to_review(client, emails):
     app_id, headers = create_filled_application(client, last_name="Refer")
+    emails.messages.clear()
     body = client.post(f"/api/v1/applications/{app_id}/submit", headers=headers).json()
     assert body["status"] == "IN_REVIEW"
     assert body["kyc_status"] == "REFER"
@@ -33,6 +35,7 @@ def test_refer_goes_to_review(client, emails):
 
 def test_reject_declines(client, emails):
     app_id, headers = create_filled_application(client, last_name="Reject")
+    emails.messages.clear()
     body = client.post(f"/api/v1/applications/{app_id}/submit", headers=headers).json()
     assert body["status"] == "DECLINED"
     assert body["kyc_status"] == "REJECT"

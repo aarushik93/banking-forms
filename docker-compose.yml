@@ -33,6 +33,11 @@ services:
       EXPERIAN_CLIENT_SECRET: ${EXPERIAN_CLIENT_SECRET:-}
       EXPERIAN_USERNAME: ${EXPERIAN_USERNAME:-}
       EXPERIAN_PASSWORD: ${EXPERIAN_PASSWORD:-}
+      BSB_DIRECTORY_URL: ${BSB_DIRECTORY_URL:-https://auspaynetbsbpublic.blob.core.windows.net/bsb-reports/BSBDirectoryFull.csv}
+      BSB_STRICT: ${BSB_STRICT:-true}
+      ADDRESS_PROVIDER: ${ADDRESS_PROVIDER:-nominatim}
+      GEOSCAPE_API_KEY: ${GEOSCAPE_API_KEY:-}
+      ACCOUNT_VERIFICATION_PROVIDER: ${ACCOUNT_VERIFICATION_PROVIDER:-mock}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-investments@example-bank.test}

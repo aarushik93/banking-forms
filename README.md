@@ -89,6 +89,27 @@ All configuration is via environment variables (see `.env.example`). Key switche
 | `ADMIN_API_TOKEN` | string | Protects `/api/v1/admin/*`; must be strong (16+ chars) in prod |
 | `ENV` | `dev` / `test` / `prod` | `prod` refuses to boot with mock KYC, console email, or a weak admin token, and disables `/docs` |
 
+### Verification & lookup services
+
+- **Email ownership (OTP)** — a 6-digit code is emailed (SendGrid/console) and must be
+  confirmed before submission. Hash-only storage, 10-minute expiry, resend cooldown,
+  5-attempt limit; changing the email resets verification. Outside prod the send response
+  includes a `debug_code` so local demos work with the console email provider.
+- **BSB directory (live)** — AusPayNet's official full directory is fetched at runtime from
+  its permanent public URL, cached in memory and refreshed daily. The UI shows the matched
+  bank/branch as you type; `BSB_STRICT=true` rejects unknown BSBs at submit (skipped if the
+  directory is unreachable).
+- **Address autocomplete (live)** — suggestions as you type, filling suburb/state/postcode.
+  Dev default is Nominatim (keyless; not licensed for production traffic); production uses
+  the Geoscape Predictive Address API (`ADDRESS_PROVIDER=geoscape` + API key). Manual entry
+  always works; the KYC check independently verifies the address.
+- **Account ownership** — the funding account must be held in the applicant's name, checked
+  at submit through an `AccountVerificationProvider`. A no-match blocks submission (the
+  draft stays editable); a provider outage never blocks. Real AU implementations (CDR /
+  PayID name-matching) require accreditation, so a deterministic mock ships for now
+  (account numbers ending 99 → no match, 88 → partial, 77 → outage) and prod refuses the
+  mock unless verification is explicitly set to `off`.
+
 ### Equifax IDMatrix integration (primary)
 
 `app/adapters/idmatrix.py` implements the IDMatrix v4 SOAP/XML contract: WS-Security
@@ -162,7 +183,10 @@ commented SSH deploy job in the workflow shows how to automate it against a VM.
 
 ## Before go-live (checklist)
 
-- [ ] Real Experian CrossCore workflow config + sandbox certification run
+- [ ] Equifax IDMatrix credentials + rule-set certification run (or Experian CrossCore)
+- [ ] Geoscape API key for address autocomplete (`ADDRESS_PROVIDER=geoscape`)
+- [ ] Account-ownership vendor (CDR or PayID name-matching) wired into
+      `adapters/account_verification.py`
 - [ ] SendGrid domain authentication (SPF/DKIM) and branded templates
 - [ ] TLS in front of nginx (load balancer or reverse proxy) and HSTS
 - [ ] Replace the shared admin token with SSO/OIDC for back-office users

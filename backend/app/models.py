@@ -72,6 +72,13 @@ class Application(Base):
     email: Mapped[str | None] = mapped_column(String(255), index=True)
     phone: Mapped[str | None] = mapped_column(String(30))
 
+    # Email ownership verification (OTP)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    email_otp_hash: Mapped[str | None] = mapped_column(String(64))
+    email_otp_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    email_otp_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    email_otp_attempts: Mapped[int] = mapped_column(Integer, default=0)
+
     # Address
     address_line1: Mapped[str | None] = mapped_column(String(255))
     address_line2: Mapped[str | None] = mapped_column(String(255))
@@ -98,6 +105,7 @@ class Application(Base):
     account_holder_name: Mapped[str | None] = mapped_column(String(100))
     bsb: Mapped[str | None] = mapped_column(String(6))
     account_number: Mapped[str | None] = mapped_column(String(9))
+    account_verification_status: Mapped[str | None] = mapped_column(String(20))
 
     # Declarations
     accepted_terms: Mapped[bool] = mapped_column(Boolean, default=False)

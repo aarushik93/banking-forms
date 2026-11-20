@@ -124,11 +124,41 @@ class MaskedBankDetails(BaseModel):
     account_number_masked: str
 
 
+class BsbLookupOut(BaseModel):
+    bsb: str
+    found: bool
+    directory_available: bool
+    bank_name: str | None = None
+    branch: str | None = None
+    suburb: str | None = None
+    state: str | None = None
+
+
+class AddressSuggestionOut(BaseModel):
+    full_text: str
+    line1: str
+    suburb: str
+    state: str
+    postcode: str
+
+
+class EmailOtpSendOut(BaseModel):
+    sent: bool
+    expires_in: int
+    resend_in: int
+    debug_code: str | None = None  # populated outside prod only
+
+
+class EmailOtpConfirmIn(BaseModel):
+    code: str = Field(min_length=4, max_length=8)
+
+
 class ApplicationView(BaseModel):
     id: UUID
     reference: str
     status: str
     kyc_status: str | None
+    email_verified: bool
     personal: PersonalDetails | None
     address: AddressDetails | None
     financial: FinancialDetails | None

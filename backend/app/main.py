@@ -11,8 +11,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.config import get_settings, validate_production_settings
 from app.database import SessionLocal
 from app.logging_conf import RequestContextMiddleware, configure_logging
-from app.routers import admin, applications, funds, health
+from app.routers import admin, applications, funds, health, lookups
 from app.seed import seed_funds
+from app.services.bsb import get_bsb_service
 
 log = structlog.get_logger("app")
 
@@ -31,11 +32,15 @@ async def lifespan(app: FastAPI):
             "fund_seed_skipped",
             hint="database schema missing — run `alembic upgrade head`",
         )
+    if settings.env != "test":
+        # Warm the BSB directory cache; non-fatal — lookups degrade gracefully.
+        get_bsb_service().refresh()
     log.info(
         "startup",
         env=settings.env,
         kyc_provider=settings.kyc_provider,
         email_provider=settings.email_provider,
+        bsb_directory_entries=get_bsb_service().entry_count(),
     )
     yield
 
@@ -63,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     api = APIRouter(prefix="/api/v1")
     api.include_router(funds.router)
+    api.include_router(lookups.router)
     api.include_router(applications.router)
     api.include_router(admin.router)
     app.include_router(api)

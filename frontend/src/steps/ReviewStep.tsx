@@ -66,7 +66,7 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
       <section className="summary-section">
         <header>
           <h3>Address</h3>
-          <button type="button" className="link-button" onClick={() => onEdit(1)}>
+          <button type="button" className="link-button" onClick={() => onEdit(2)}>
             Edit
           </button>
         </header>
@@ -90,7 +90,7 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
       <section className="summary-section">
         <header>
           <h3>Work, income and tax</h3>
-          <button type="button" className="link-button" onClick={() => onEdit(2)}>
+          <button type="button" className="link-button" onClick={() => onEdit(3)}>
             Edit
           </button>
         </header>
@@ -107,7 +107,7 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
       <section className="summary-section">
         <header>
           <h3>Investment</h3>
-          <button type="button" className="link-button" onClick={() => onEdit(3)}>
+          <button type="button" className="link-button" onClick={() => onEdit(4)}>
             Edit
           </button>
         </header>
@@ -128,7 +128,7 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
       <section className="summary-section">
         <header>
           <h3>Funding account</h3>
-          <button type="button" className="link-button" onClick={() => onEdit(4)}>
+          <button type="button" className="link-button" onClick={() => onEdit(5)}>
             Edit
           </button>
         </header>

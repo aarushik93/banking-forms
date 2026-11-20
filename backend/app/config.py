@@ -39,6 +39,29 @@ class Settings(BaseSettings):
     experian_username: str = ""
     experian_password: str = ""
 
+    # BSB directory (AusPayNet's permanent public URL; refreshed monthly upstream)
+    bsb_directory_url: str = (
+        "https://auspaynetbsbpublic.blob.core.windows.net/bsb-reports/BSBDirectoryFull.csv"
+    )
+    bsb_refresh_seconds: int = 86400
+    # Reject unknown BSBs at submit (skipped automatically if the directory is unreachable)
+    bsb_strict: bool = True
+
+    # Address autocomplete: nominatim (keyless, dev/demo) | geoscape (production) | off
+    address_provider: str = "nominatim"
+    nominatim_base_url: str = "https://nominatim.openstreetmap.org"
+    geoscape_api_key: str = ""
+    geoscape_base_url: str = "https://api.psma.com.au"
+
+    # Account ownership verification: mock | off (real AU options — CDR / PayID
+    # name-matching — require accreditation; wire a vendor adapter when contracted)
+    account_verification_provider: str = "mock"
+
+    # Email OTP verification
+    otp_expiry_seconds: int = 600
+    otp_resend_seconds: int = 60
+    otp_max_attempts: int = 5
+
     # Email / SendGrid
     email_provider: str = "console"  # console | sendgrid
     sendgrid_api_key: str = ""
@@ -77,6 +100,16 @@ def validate_production_settings(settings: Settings) -> None:
             problems.append(
                 "The bundled IDMatrix mock endpoint/credentials must not be used in prod"
             )
+    if settings.account_verification_provider == "mock":
+        problems.append(
+            "ACCOUNT_VERIFICATION_PROVIDER=mock must not be used in prod "
+            "(wire a real vendor, or set it to 'off' explicitly)"
+        )
+    if settings.address_provider == "nominatim":
+        problems.append(
+            "ADDRESS_PROVIDER=nominatim is not licensed for production traffic "
+            "(use geoscape, or 'off' for manual entry)"
+        )
     if settings.email_provider != "sendgrid":
         problems.append("EMAIL_PROVIDER=sendgrid is required in prod")
     if settings.email_provider == "sendgrid" and not settings.sendgrid_api_key:

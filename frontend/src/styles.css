@@ -696,3 +696,87 @@ h3 {
   max-width: 420px;
   margin: 3rem auto;
 }
+
+/* Address autocomplete */
+
+.autocomplete {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  top: calc(100% - 0.75rem);
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(13, 59, 102, 0.14);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.suggestions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.suggestions button:hover {
+  background: #eef4fa;
+}
+
+/* BSB lookup feedback */
+
+.bsb-match {
+  color: var(--success);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0.3rem 0 0;
+}
+
+.bsb-warn {
+  color: #9a6400;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0.3rem 0 0;
+}
+
+/* Email OTP */
+
+.otp-field {
+  max-width: 260px;
+}
+
+.otp-input {
+  font-size: 1.4rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+}
+
+.otp-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.otp-debug {
+  background: #fff8e1;
+  border: 1px dashed #d4a72c;
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  color: #6b5200;
+}

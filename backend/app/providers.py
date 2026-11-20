@@ -4,6 +4,17 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from app.adapters.account_verification import (
+    AccountVerificationProvider,
+    DisabledAccountVerificationProvider,
+    MockAccountVerificationProvider,
+)
+from app.adapters.address import (
+    AddressLookupProvider,
+    DisabledAddressProvider,
+    GeoscapeAddressProvider,
+    NominatimAddressProvider,
+)
 from app.adapters.email import ConsoleEmailProvider, EmailProvider, SendGridEmailProvider
 from app.adapters.idmatrix import EquifaxIdMatrixProvider
 from app.adapters.kyc import ExperianCrossCoreProvider, KycProvider, MockKycProvider
@@ -45,9 +56,37 @@ def _email_singleton() -> EmailProvider:
     return ConsoleEmailProvider()
 
 
+@lru_cache
+def _address_singleton() -> AddressLookupProvider:
+    settings = get_settings()
+    if settings.address_provider == "geoscape":
+        return GeoscapeAddressProvider(
+            api_key=settings.geoscape_api_key, base_url=settings.geoscape_base_url
+        )
+    if settings.address_provider == "nominatim":
+        return NominatimAddressProvider(base_url=settings.nominatim_base_url)
+    return DisabledAddressProvider()
+
+
+@lru_cache
+def _account_verification_singleton() -> AccountVerificationProvider:
+    settings = get_settings()
+    if settings.account_verification_provider == "off":
+        return DisabledAccountVerificationProvider()
+    return MockAccountVerificationProvider()
+
+
 def get_kyc_provider() -> KycProvider:
     return _kyc_singleton()
 
 
 def get_email_provider() -> EmailProvider:
     return _email_singleton()
+
+
+def get_address_provider() -> AddressLookupProvider:
+    return _address_singleton()
+
+
+def get_account_verification_provider() -> AccountVerificationProvider:
+    return _account_verification_singleton()

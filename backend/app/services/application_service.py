@@ -9,8 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app import models, schemas
+from app.adapters.account_verification import AccountMatch, AccountVerificationProvider
 from app.adapters.kyc import KycApplicant, KycDecision, KycError, KycProvider
 from app.audit import record_event
+from app.config import get_settings
+from app.services.bsb import get_bsb_service
+from app.services.verification import reset_email_verification
 
 log = structlog.get_logger("applications")
 
@@ -100,6 +104,7 @@ def apply_draft_update(
         raise HTTPException(
             status_code=409, detail="Application has been submitted and can no longer be edited"
         )
+    previous_email = application.email
     updated_sections: list[str] = []
     for section_name, field_map in _SECTION_FIELD_MAP.items():
         section = getattr(update, section_name)
@@ -108,6 +113,10 @@ def apply_draft_update(
         for schema_field, model_field in field_map.items():
             setattr(application, model_field, getattr(section, schema_field))
         updated_sections.append(section_name)
+    if "personal" in updated_sections and application.email != previous_email:
+        # A new email address must be verified again.
+        reset_email_verification(application)
+        record_event(db, application.id, "email_changed", {"verification_reset": True})
     if updated_sections:
         record_event(db, application.id, "draft_updated", {"sections": updated_sections})
         db.commit()
@@ -142,8 +151,56 @@ def _to_kyc_applicant(application: models.Application) -> KycApplicant:
     )
 
 
+def _check_bank_account(
+    db: Session,
+    application: models.Application,
+    account_verifier: AccountVerificationProvider,
+) -> None:
+    assert application.bsb and application.account_number
+
+    settings = get_settings()
+    bsb_service = get_bsb_service()
+    if (
+        settings.bsb_strict
+        and bsb_service.available
+        and bsb_service.lookup(application.bsb) is None
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "That BSB isn't in the national BSB directory — "
+                "please check your bank details"
+            },
+        )
+
+    result = account_verifier.verify(
+        bsb=application.bsb,
+        account_number=application.account_number,
+        account_name=application.account_holder_name or "",
+    )
+    record_event(
+        db,
+        application.id,
+        "account_verification",
+        {"status": result.status.value, "reference": result.reference},
+    )
+    if result.status is AccountMatch.NO_MATCH:
+        db.commit()
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "We couldn't confirm that bank account is held in your name. "
+                "Please check the account details — the funding account must be yours."
+            },
+        )
+    application.account_verification_status = result.status.value
+
+
 def submit_application(
-    db: Session, application: models.Application, kyc: KycProvider
+    db: Session,
+    application: models.Application,
+    kyc: KycProvider,
+    account_verifier: AccountVerificationProvider,
 ) -> models.Application:
     retry_after_error = (
         application.status == models.ApplicationStatus.SUBMITTED.value
@@ -157,6 +214,11 @@ def submit_application(
         raise HTTPException(
             status_code=400,
             detail={"message": "Application is incomplete", "missing_sections": missing},
+        )
+    if not application.email_verified:
+        raise HTTPException(
+            status_code=400,
+            detail={"message": "Please verify your email address before submitting"},
         )
     if not (
         application.accepted_terms and application.accepted_risk and application.consent_kyc
@@ -174,6 +236,7 @@ def submit_application(
         raise HTTPException(status_code=400, detail={"message": "Unknown or inactive fund"})
 
     if not retry_after_error:
+        _check_bank_account(db, application, account_verifier)
         application.status = models.ApplicationStatus.SUBMITTED.value
         application.submitted_at = _utcnow()
         record_event(db, application.id, "application_submitted")
@@ -322,6 +385,7 @@ def to_view(application: models.Application) -> schemas.ApplicationView:
         reference=application.reference,
         status=application.status,
         kyc_status=application.kyc_status,
+        email_verified=application.email_verified,
         personal=personal,
         address=address,
         financial=financial,

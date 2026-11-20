@@ -1,6 +1,6 @@
 from datetime import date
 
-from tests.conftest import valid_sections
+from tests.conftest import valid_sections, verify_email
 
 
 def _create(client) -> tuple[str, dict]:
@@ -57,6 +57,7 @@ def test_submit_without_consent(client):
     sections = valid_sections()
     sections["declarations"]["consent_kyc"] = False
     client.put(f"/api/v1/applications/{app_id}", json=sections, headers=headers)
+    verify_email(client, app_id, headers)
     resp = client.post(f"/api/v1/applications/{app_id}/submit", headers=headers)
     assert resp.status_code == 400
     assert "declarations" in resp.json()["detail"]["message"].lower()
@@ -67,6 +68,7 @@ def test_submit_unknown_fund(client):
     sections = valid_sections()
     sections["investment"]["fund_code"] = "NOPE"
     client.put(f"/api/v1/applications/{app_id}", json=sections, headers=headers)
+    verify_email(client, app_id, headers)
     resp = client.post(f"/api/v1/applications/{app_id}/submit", headers=headers)
     assert resp.status_code == 400
     assert "fund" in resp.json()["detail"]["message"].lower()

@@ -6,6 +6,7 @@ import { Stepper } from '../components/Stepper'
 import { clearSession, loadSession, saveSession, type Session } from '../storage'
 import { AddressStep } from '../steps/AddressStep'
 import { BankStep } from '../steps/BankStep'
+import { EmailVerifyStep } from '../steps/EmailVerifyStep'
 import { FinancialStep } from '../steps/FinancialStep'
 import { InvestmentStep } from '../steps/InvestmentStep'
 import { PersonalStep } from '../steps/PersonalStep'
@@ -14,10 +15,23 @@ import type { ApplicationView, Fund } from '../types'
 import type { DeclarationsValues } from '../validation'
 import type { WizardData } from '../wizardTypes'
 
-const STEPS = ['About you', 'Address', 'Finances', 'Investment', 'Bank', 'Review'] as const
+const STEPS = [
+  'About you',
+  'Verify email',
+  'Address',
+  'Finances',
+  'Investment',
+  'Bank',
+  'Review',
+] as const
 
 function describeError(e: unknown, fallback: string): string {
-  if (e instanceof ApiError && typeof e.detail === 'string') return e.detail
+  if (e instanceof ApiError) {
+    if (typeof e.detail === 'string') return e.detail
+    if (e.detail && typeof e.detail === 'object' && 'message' in e.detail) {
+      return String((e.detail as { message: unknown }).message)
+    }
+  }
   return fallback
 }
 
@@ -31,6 +45,7 @@ export default function ApplyWizard() {
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [emailVerified, setEmailVerified] = useState(false)
 
   const hydrate = useCallback((view: ApplicationView) => {
     // The API returns values that already passed backend validation, so the
@@ -58,6 +73,7 @@ export default function ApplyWizard() {
     }
     // Bank details come back masked, so they are re-entered when resuming.
     setData(next)
+    setEmailVerified(view.email_verified)
   }, [])
 
   useEffect(() => {
@@ -115,7 +131,8 @@ export default function ApplyWizard() {
     setSaving(true)
     setError(null)
     try {
-      await api.updateDraft(session.id, session.resumeToken, { [name]: payload })
+      const view = await api.updateDraft(session.id, session.resumeToken, { [name]: payload })
+      setEmailVerified(view.email_verified)
       setData((d) => ({ ...d, [name]: values }))
       setStep((s) => s + 1)
       window.scrollTo(0, 0)
@@ -178,7 +195,23 @@ export default function ApplyWizard() {
             onNext={(v) => void saveSection('personal', v, v)}
           />
         )}
-        {step === 1 && (
+        {step === 1 && session && (
+          <EmailVerifyStep
+            email={data.personal?.email ?? ''}
+            verified={emailVerified}
+            onSend={() => api.sendEmailOtp(session.id, session.resumeToken)}
+            onConfirm={async (code) => {
+              await api.confirmEmailOtp(session.id, session.resumeToken, code)
+              setEmailVerified(true)
+            }}
+            onContinue={() => {
+              setStep(2)
+              window.scrollTo(0, 0)
+            }}
+            onBack={goBack}
+          />
+        )}
+        {step === 2 && (
           <AddressStep
             defaultValues={data.address}
             saving={saving}
@@ -186,7 +219,7 @@ export default function ApplyWizard() {
             onNext={(v) => void saveSection('address', v, { ...v, line2: v.line2 || null })}
           />
         )}
-        {step === 2 && (
+        {step === 3 && (
           <FinancialStep
             defaultValues={data.financial}
             saving={saving}
@@ -194,7 +227,7 @@ export default function ApplyWizard() {
             onNext={(v) => void saveSection('financial', v, { ...v, tfn: v.tfn || null })}
           />
         )}
-        {step === 3 && (
+        {step === 4 && (
           <InvestmentStep
             funds={funds}
             defaultValues={data.investment}
@@ -203,7 +236,7 @@ export default function ApplyWizard() {
             onNext={(v) => void saveSection('investment', v, v)}
           />
         )}
-        {step === 4 && (
+        {step === 5 && (
           <BankStep
             defaultValues={data.bank}
             saving={saving}
@@ -213,7 +246,7 @@ export default function ApplyWizard() {
             }
           />
         )}
-        {step === 5 && (
+        {step === 6 && (
           <ReviewStep
             data={data}
             funds={funds}

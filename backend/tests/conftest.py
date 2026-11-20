@@ -8,6 +8,11 @@ os.environ["KYC_PROVIDER"] = "mock"
 os.environ["EMAIL_PROVIDER"] = "console"
 os.environ["ADMIN_API_TOKEN"] = "test-admin-token"
 os.environ["RATE_LIMIT_PER_MINUTE"] = "0"
+# Point external lookups at unroutable endpoints: the BSB directory becomes
+# unavailable (strict check skips) and nothing touches the network in tests.
+os.environ["BSB_DIRECTORY_URL"] = "http://127.0.0.1:9/bsb.csv"
+os.environ["ADDRESS_PROVIDER"] = "off"
+os.environ["OTP_RESEND_SECONDS"] = "0"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -105,11 +110,27 @@ def valid_sections(last_name: str = "Smith", email: str = "jane.smith@example.co
     }
 
 
-def create_filled_application(client: TestClient, **kwargs) -> tuple[str, dict]:
+def verify_email(client: TestClient, app_id: str, headers: dict) -> None:
+    sent = client.post(f"/api/v1/applications/{app_id}/verify-email", headers=headers)
+    assert sent.status_code == 200, sent.text
+    code = sent.json()["debug_code"]
+    confirmed = client.post(
+        f"/api/v1/applications/{app_id}/verify-email/confirm",
+        json={"code": code},
+        headers=headers,
+    )
+    assert confirmed.status_code == 200, confirmed.text
+
+
+def create_filled_application(
+    client: TestClient, *, verified: bool = True, **kwargs
+) -> tuple[str, dict]:
     created = client.post("/api/v1/applications").json()
     headers = {"X-Resume-Token": created["resume_token"]}
     resp = client.put(
         f"/api/v1/applications/{created['id']}", json=valid_sections(**kwargs), headers=headers
     )
     assert resp.status_code == 200, resp.text
+    if verified:
+        verify_email(client, created["id"], headers)
     return created["id"], headers

@@ -54,11 +54,37 @@ export interface DeclarationsSection {
   consent_kyc: boolean
 }
 
+export interface BsbLookup {
+  bsb: string
+  found: boolean
+  directory_available: boolean
+  bank_name: string | null
+  branch: string | null
+  suburb: string | null
+  state: string | null
+}
+
+export interface AddressSuggestion {
+  full_text: string
+  line1: string
+  suburb: string
+  state: string
+  postcode: string
+}
+
+export interface EmailOtpSend {
+  sent: boolean
+  expires_in: number
+  resend_in: number
+  debug_code: string | null
+}
+
 export interface ApplicationView {
   id: string
   reference: string
   status: ApplicationStatus
   kyc_status: string | null
+  email_verified: boolean
   personal: PersonalSection | null
   address: AddressSection | null
   financial: FinancialSection | null
