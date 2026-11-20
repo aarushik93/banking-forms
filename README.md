@@ -162,11 +162,17 @@ The decision mapping is: `ACCEPT/CONTINUE → approve`, `REFER/NODECISION → ma
 `REJECT/DECLINE/STOP → decline`; anything unrecognised fails safe (application stays
 submitted, applicant is asked to retry).
 
-### SendGrid integration
+### Email integration (Resend / SendGrid)
 
-`app/adapters/email.py` posts to the v3 Mail Send API with the same retry policy. Emails
-(received / approved / declined) are sent from FastAPI background tasks so SendGrid latency
-never blocks a response; failures are logged and recorded in the audit trail.
+`app/adapters/email.py` has interchangeable providers behind `EmailProvider`:
+**Resend** (`EMAIL_PROVIDER=resend` + `RESEND_API_KEY`; until you verify a sending domain
+in Resend, `EMAIL_FROM` must be `onboarding@resend.dev` and the free tier only delivers to
+the account owner's address) and **SendGrid** (`EMAIL_PROVIDER=sendgrid` +
+`SENDGRID_API_KEY`), both with the same retry policy. Emails (verification codes,
+received / approved / declined) are sent from FastAPI background tasks so provider latency
+never blocks a response; failures are logged and recorded in the audit trail. Whichever
+vendor you use, deliverability is determined by domain authentication (SPF/DKIM/DMARC) —
+see the go-live checklist.
 
 ## API overview
 

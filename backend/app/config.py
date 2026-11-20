@@ -62,8 +62,9 @@ class Settings(BaseSettings):
     otp_resend_seconds: int = 60
     otp_max_attempts: int = 5
 
-    # Email / SendGrid
-    email_provider: str = "console"  # console | sendgrid
+    # Email
+    email_provider: str = "console"  # console | resend | sendgrid
+    resend_api_key: str = ""
     sendgrid_api_key: str = ""
     email_from: str = "investments@example-bank.test"
     email_from_name: str = "Example Bank Investments"
@@ -110,8 +111,10 @@ def validate_production_settings(settings: Settings) -> None:
             "ADDRESS_PROVIDER=nominatim is not licensed for production traffic "
             "(use geoscape, or 'off' for manual entry)"
         )
-    if settings.email_provider != "sendgrid":
-        problems.append("EMAIL_PROVIDER=sendgrid is required in prod")
+    if settings.email_provider not in ("resend", "sendgrid"):
+        problems.append("A real email provider (resend or sendgrid) is required in prod")
+    if settings.email_provider == "resend" and not settings.resend_api_key:
+        problems.append("RESEND_API_KEY is required when EMAIL_PROVIDER=resend")
     if settings.email_provider == "sendgrid" and not settings.sendgrid_api_key:
         problems.append("SENDGRID_API_KEY is required when EMAIL_PROVIDER=sendgrid")
     if problems:

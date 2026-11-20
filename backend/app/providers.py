@@ -15,7 +15,12 @@ from app.adapters.address import (
     GeoscapeAddressProvider,
     NominatimAddressProvider,
 )
-from app.adapters.email import ConsoleEmailProvider, EmailProvider, SendGridEmailProvider
+from app.adapters.email import (
+    ConsoleEmailProvider,
+    EmailProvider,
+    ResendEmailProvider,
+    SendGridEmailProvider,
+)
 from app.adapters.idmatrix import EquifaxIdMatrixProvider
 from app.adapters.kyc import ExperianCrossCoreProvider, KycProvider, MockKycProvider
 from app.config import get_settings
@@ -47,6 +52,12 @@ def _kyc_singleton() -> KycProvider:
 @lru_cache
 def _email_singleton() -> EmailProvider:
     settings = get_settings()
+    if settings.email_provider == "resend":
+        return ResendEmailProvider(
+            api_key=settings.resend_api_key,
+            from_email=settings.email_from,
+            from_name=settings.email_from_name,
+        )
     if settings.email_provider == "sendgrid":
         return SendGridEmailProvider(
             api_key=settings.sendgrid_api_key,
