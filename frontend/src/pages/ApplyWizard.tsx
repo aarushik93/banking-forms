@@ -37,11 +37,16 @@ export default function ApplyWizard() {
     // narrowing casts to the form value types are safe.
     const next: WizardData = {}
     if (view.personal) next.personal = view.personal as WizardData['personal']
-    if (view.address) next.address = { ...view.address, line2: view.address.line2 ?? '' }
+    if (view.address) {
+      next.address = {
+        ...view.address,
+        line2: view.address.line2 ?? '',
+      } as WizardData['address']
+    }
     if (view.financial) {
       next.financial = {
         ...view.financial,
-        nino: view.financial.nino ?? '',
+        tfn: view.financial.tfn ?? '',
       } as WizardData['financial']
     }
     if (view.investment) {
@@ -186,7 +191,7 @@ export default function ApplyWizard() {
             defaultValues={data.financial}
             saving={saving}
             onBack={goBack}
-            onNext={(v) => void saveSection('financial', v, { ...v, nino: v.nino || null })}
+            onNext={(v) => void saveSection('financial', v, { ...v, tfn: v.tfn || null })}
           />
         )}
         {step === 3 && (
@@ -204,7 +209,7 @@ export default function ApplyWizard() {
             saving={saving}
             onBack={goBack}
             onNext={(v) =>
-              void saveSection('bank', v, { ...v, sort_code: v.sort_code.replace(/\D/g, '') })
+              void saveSection('bank', v, { ...v, bsb: v.bsb.replace(/\D/g, '') })
             }
           />
         )}

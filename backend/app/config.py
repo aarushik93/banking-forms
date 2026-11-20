@@ -19,9 +19,9 @@ class Settings(BaseSettings):
 
     admin_api_token: str = "change-me"
 
-    # KYC / Experian CrossCore
+    # KYC / Experian CrossCore (Australia: production host is https://api.experian.com.au)
     kyc_provider: str = "mock"  # mock | experian
-    experian_base_url: str = "https://sandbox-uk-api.experian.com"
+    experian_base_url: str = "https://sandbox-api.experian.com.au"
     experian_token_path: str = "/oauth2/v1/token"
     # The exact CrossCore endpoint and workflow are assigned during Experian onboarding;
     # the request/response mapping lives in app/adapters/kyc.py.

@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-UK_POSTCODE = r"^[A-Za-z]{1,2}\d[A-Za-z\d]? ?\d[A-Za-z]{2}$"
+AU_POSTCODE = r"^\d{4}$"
 COUNTRY = r"^[A-Z]{2}$"
 MIN_INITIAL_INVESTMENT = Decimal("500")
 MAX_INITIAL_INVESTMENT = Decimal("1000000")
@@ -36,12 +36,16 @@ class PersonalDetails(BaseModel):
         return v
 
 
+AuState = Literal["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"]
+
+
 class AddressDetails(BaseModel):
     line1: str = Field(min_length=1, max_length=255)
     line2: str | None = Field(default=None, max_length=255)
-    city: str = Field(min_length=1, max_length=100)
-    postcode: str = Field(pattern=UK_POSTCODE)
-    country: str = Field(default="GB", pattern=COUNTRY)
+    city: str = Field(min_length=1, max_length=100)  # suburb
+    state: AuState
+    postcode: str = Field(pattern=AU_POSTCODE)
+    country: str = Field(default="AU", pattern=COUNTRY)
     years_at_address: int = Field(ge=0, le=100)
 
 
@@ -56,7 +60,9 @@ class FinancialDetails(BaseModel):
     annual_income: int = Field(ge=0, le=100_000_000)
     nationality: str = Field(pattern=COUNTRY)
     tax_residency_country: str = Field(pattern=COUNTRY)
-    nino: str | None = Field(default=None, pattern=r"^[A-Za-z]{2}\d{6}[A-Za-z]$")
+    # Tax File Number: collected for withholding-tax purposes only; optional —
+    # quoting a TFN is never compulsory, but withholding applies without it.
+    tfn: str | None = Field(default=None, pattern=r"^\d{8,9}$")
 
 
 class InvestmentDetails(BaseModel):
@@ -72,8 +78,8 @@ class InvestmentDetails(BaseModel):
 
 class BankDetails(BaseModel):
     account_holder_name: str = Field(min_length=1, max_length=100)
-    sort_code: str = Field(pattern=r"^\d{6}$")
-    account_number: str = Field(pattern=r"^\d{8}$")
+    bsb: str = Field(pattern=r"^\d{6}$")
+    account_number: str = Field(pattern=r"^\d{6,9}$")
 
 
 class Declarations(BaseModel):
@@ -114,7 +120,7 @@ class ApplicationCreated(BaseModel):
 
 class MaskedBankDetails(BaseModel):
     account_holder_name: str
-    sort_code: str
+    bsb: str
     account_number_masked: str
 
 

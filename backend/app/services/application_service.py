@@ -62,6 +62,7 @@ _SECTION_FIELD_MAP: dict[str, dict[str, str]] = {
         "line1": "address_line1",
         "line2": "address_line2",
         "city": "city",
+        "state": "state",
         "postcode": "postcode",
         "country": "country",
         "years_at_address": "years_at_address",
@@ -71,7 +72,7 @@ _SECTION_FIELD_MAP: dict[str, dict[str, str]] = {
         "annual_income": "annual_income",
         "nationality": "nationality",
         "tax_residency_country": "tax_residency_country",
-        "nino": "nino",
+        "tfn": "tfn",
     },
     "investment": {
         "fund_code": "fund_code",
@@ -81,7 +82,7 @@ _SECTION_FIELD_MAP: dict[str, dict[str, str]] = {
     },
     "bank": {
         "account_holder_name": "account_holder_name",
-        "sort_code": "sort_code",
+        "bsb": "bsb",
         "account_number": "account_number",
     },
     "declarations": {
@@ -119,7 +120,7 @@ def missing_sections(application: models.Application) -> list[str]:
         "address": application.address_line1 is not None,
         "financial": application.employment_status is not None,
         "investment": application.fund_code is not None,
-        "bank": application.sort_code is not None,
+        "bank": application.bsb is not None,
     }
     return [name for name, present in checks.items() if not present]
 
@@ -135,9 +136,9 @@ def _to_kyc_applicant(application: models.Application) -> KycApplicant:
         address_line1=application.address_line1 or "",
         address_line2=application.address_line2,
         city=application.city or "",
+        state=application.state or "",
         postcode=application.postcode or "",
-        country=application.country or "GB",
-        nino=application.nino,
+        country=application.country or "AU",
     )
 
 
@@ -282,6 +283,7 @@ def to_view(application: models.Application) -> schemas.ApplicationView:
             line1=application.address_line1,
             line2=application.address_line2,
             city=application.city,
+            state=application.state,
             postcode=application.postcode,
             country=application.country,
             years_at_address=application.years_at_address,
@@ -293,7 +295,7 @@ def to_view(application: models.Application) -> schemas.ApplicationView:
             annual_income=application.annual_income,
             nationality=application.nationality,
             tax_residency_country=application.tax_residency_country,
-            nino=application.nino,
+            tfn=application.tfn,
         )
     investment = None
     if application.fund_code is not None:
@@ -304,10 +306,10 @@ def to_view(application: models.Application) -> schemas.ApplicationView:
             source_of_funds=application.source_of_funds,
         )
     bank = None
-    if application.sort_code is not None and application.account_number is not None:
+    if application.bsb is not None and application.account_number is not None:
         bank = schemas.MaskedBankDetails(
             account_holder_name=application.account_holder_name or "",
-            sort_code=application.sort_code,
+            bsb=application.bsb,
             account_number_masked=_mask_account_number(application.account_number),
         )
     declarations = schemas.Declarations(

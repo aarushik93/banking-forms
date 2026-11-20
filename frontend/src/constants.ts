@@ -3,22 +3,22 @@ import type { ApplicationStatus } from './types'
 export const TITLES = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Dr'] as const
 
 export const COUNTRIES: Array<[string, string]> = [
-  ['GB', 'United Kingdom'],
-  ['IE', 'Ireland'],
-  ['FR', 'France'],
-  ['DE', 'Germany'],
-  ['ES', 'Spain'],
-  ['IT', 'Italy'],
-  ['NL', 'Netherlands'],
-  ['PT', 'Portugal'],
-  ['PL', 'Poland'],
-  ['US', 'United States'],
-  ['CA', 'Canada'],
   ['AU', 'Australia'],
   ['NZ', 'New Zealand'],
+  ['GB', 'United Kingdom'],
+  ['IE', 'Ireland'],
+  ['US', 'United States'],
+  ['CA', 'Canada'],
+  ['SG', 'Singapore'],
   ['IN', 'India'],
+  ['CN', 'China'],
+  ['JP', 'Japan'],
+  ['DE', 'Germany'],
+  ['FR', 'France'],
   ['ZA', 'South Africa'],
 ]
+
+export const AU_STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'ACT', 'NT'] as const
 
 export const EMPLOYMENT_OPTIONS = [
   { value: 'employed', label: 'Employed' },
@@ -50,7 +50,7 @@ export function formatMoney(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—'
   const n = typeof value === 'string' ? Number(value) : value
   if (Number.isNaN(n)) return String(value)
-  return n.toLocaleString('en-GB', { style: 'currency', currency: 'GBP' })
+  return n.toLocaleString('en-AU', { style: 'currency', currency: 'AUD' })
 }
 
 export function labelFor(options: Array<{ value: string; label: string }>, value?: string | null) {

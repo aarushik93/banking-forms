@@ -16,13 +16,13 @@ APPLICANT = KycApplicant(
     last_name="Smith",
     date_of_birth=date(1990, 4, 12),
     email="jane@example.com",
-    phone="+44 7700 900123",
-    address_line1="1 High Street",
+    phone="+61 412 345 678",
+    address_line1="1 George Street",
     address_line2=None,
-    city="London",
-    postcode="SW1A 1AA",
-    country="GB",
-    nino="QQ123456C",
+    city="Sydney",
+    state="NSW",
+    postcode="2000",
+    country="AU",
 )
 
 

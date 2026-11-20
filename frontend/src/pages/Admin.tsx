@@ -236,7 +236,7 @@ export default function Admin() {
                 <dt>Bank account</dt>
                 <dd>
                   {detail.bank
-                    ? `${detail.bank.sort_code} / ${detail.bank.account_number_masked}`
+                    ? `BSB ${detail.bank.bsb} / ${detail.bank.account_number_masked}`
                     : '—'}
                 </dd>
               </div>

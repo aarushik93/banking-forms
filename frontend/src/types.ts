@@ -21,6 +21,7 @@ export interface AddressSection {
   line1: string
   line2: string | null
   city: string
+  state: string
   postcode: string
   country: string
   years_at_address: number
@@ -31,7 +32,7 @@ export interface FinancialSection {
   annual_income: number
   nationality: string
   tax_residency_country: string
-  nino: string | null
+  tfn: string | null
 }
 
 export interface InvestmentSection {
@@ -43,7 +44,7 @@ export interface InvestmentSection {
 
 export interface MaskedBankSection {
   account_holder_name: string
-  sort_code: string
+  bsb: string
   account_number_masked: string
 }
 

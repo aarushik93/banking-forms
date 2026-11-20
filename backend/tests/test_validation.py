@@ -18,10 +18,18 @@ def test_underage_applicant_rejected(client):
     assert "18" in resp.text
 
 
-def test_bad_sort_code_rejected(client):
+def test_bad_bsb_rejected(client):
     app_id, headers = _create(client)
     sections = valid_sections()
-    sections["bank"]["sort_code"] = "12-34-56"
+    sections["bank"]["bsb"] = "06-2000"
+    resp = client.put(f"/api/v1/applications/{app_id}", json=sections, headers=headers)
+    assert resp.status_code == 422
+
+
+def test_bad_postcode_rejected(client):
+    app_id, headers = _create(client)
+    sections = valid_sections()
+    sections["address"]["postcode"] = "SW1A 1AA"
     resp = client.put(f"/api/v1/applications/{app_id}", json=sections, headers=headers)
     assert resp.status_code == 422
 

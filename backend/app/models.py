@@ -75,7 +75,8 @@ class Application(Base):
     # Address
     address_line1: Mapped[str | None] = mapped_column(String(255))
     address_line2: Mapped[str | None] = mapped_column(String(255))
-    city: Mapped[str | None] = mapped_column(String(100))
+    city: Mapped[str | None] = mapped_column(String(100))  # suburb
+    state: Mapped[str | None] = mapped_column(String(3))
     postcode: Mapped[str | None] = mapped_column(String(10))
     country: Mapped[str | None] = mapped_column(String(2))
     years_at_address: Mapped[int | None] = mapped_column(Integer)
@@ -85,7 +86,7 @@ class Application(Base):
     annual_income: Mapped[int | None] = mapped_column(Integer)
     nationality: Mapped[str | None] = mapped_column(String(2))
     tax_residency_country: Mapped[str | None] = mapped_column(String(2))
-    nino: Mapped[str | None] = mapped_column(String(9))
+    tfn: Mapped[str | None] = mapped_column(String(9))  # Tax File Number (tax use only)
 
     # Investment
     fund_code: Mapped[str | None] = mapped_column(String(20))
@@ -95,8 +96,8 @@ class Application(Base):
 
     # Bank (direct debit funding)
     account_holder_name: Mapped[str | None] = mapped_column(String(100))
-    sort_code: Mapped[str | None] = mapped_column(String(6))
-    account_number: Mapped[str | None] = mapped_column(String(8))
+    bsb: Mapped[str | None] = mapped_column(String(6))
+    account_number: Mapped[str | None] = mapped_column(String(9))
 
     # Declarations
     accepted_terms: Mapped[bool] = mapped_column(Boolean, default=False)

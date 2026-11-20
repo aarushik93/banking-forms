@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { Field } from '../components/Field'
-import { COUNTRIES } from '../constants'
+import { AU_STATES, COUNTRIES } from '../constants'
 import { addressSchema, type AddressValues } from '../validation'
 
 interface Props {
@@ -19,7 +19,7 @@ export function AddressStep({ defaultValues, onNext, onBack, saving }: Props) {
     formState: { errors },
   } = useForm<AddressValues>({
     resolver: zodResolver(addressSchema),
-    defaultValues: { country: 'GB', line2: '', ...defaultValues },
+    defaultValues: { country: 'AU', line2: '', ...defaultValues },
   })
 
   return (
@@ -33,11 +33,30 @@ export function AddressStep({ defaultValues, onNext, onBack, saving }: Props) {
         <input type="text" autoComplete="address-line2" {...register('line2')} />
       </Field>
       <div className="grid-2">
-        <Field label="Town or city" error={errors.city?.message}>
+        <Field label="Suburb" error={errors.city?.message}>
           <input type="text" autoComplete="address-level2" {...register('city')} />
         </Field>
+        <Field label="State / territory" error={errors.state?.message}>
+          <select {...register('state')} defaultValue={defaultValues?.state ?? ''}>
+            <option value="" disabled>
+              Select…
+            </option>
+            {AU_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </Field>
         <Field label="Postcode" error={errors.postcode?.message}>
-          <input type="text" autoComplete="postal-code" placeholder="SW1A 1AA" {...register('postcode')} />
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            placeholder="2000"
+            maxLength={4}
+            {...register('postcode')}
+          />
         </Field>
         <Field label="Country" error={errors.country?.message}>
           <select {...register('country')}>

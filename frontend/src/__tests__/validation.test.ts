@@ -40,17 +40,17 @@ describe('personalSchema', () => {
 describe('bankSchema', () => {
   const base = {
     account_holder_name: 'Jane Smith',
-    sort_code: '123456',
+    bsb: '062000',
     account_number: '12345678',
   }
 
-  it('accepts plain and formatted sort codes', () => {
+  it('accepts plain and formatted BSBs', () => {
     expect(bankSchema.safeParse(base).success).toBe(true)
-    expect(bankSchema.safeParse({ ...base, sort_code: '12-34-56' }).success).toBe(true)
+    expect(bankSchema.safeParse({ ...base, bsb: '062-000' }).success).toBe(true)
   })
 
-  it('rejects malformed sort codes and account numbers', () => {
-    expect(bankSchema.safeParse({ ...base, sort_code: '12345' }).success).toBe(false)
+  it('rejects malformed BSBs and account numbers', () => {
+    expect(bankSchema.safeParse({ ...base, bsb: '06200' }).success).toBe(false)
     expect(bankSchema.safeParse({ ...base, account_number: '1234' }).success).toBe(false)
   })
 })

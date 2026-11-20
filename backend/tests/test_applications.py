@@ -4,7 +4,7 @@ from tests.conftest import create_filled_application, valid_sections
 def test_funds_seeded(client):
     funds = client.get("/api/v1/funds").json()
     codes = {f["code"] for f in funds}
-    assert {"GEI", "BAL", "SFI", "ESG"} <= codes
+    assert {"GEI", "BAL", "AFI", "ESG"} <= codes
 
 
 def test_happy_path_approved(client, emails):

@@ -23,9 +23,9 @@ DEFAULT_FUNDS: list[dict] = [
         "annual_charge_pct": Decimal("0.45"),
     },
     {
-        "code": "SFI",
-        "name": "Sterling Fixed Income",
-        "description": "Investment-grade GBP corporate and government bonds.",
+        "code": "AFI",
+        "name": "Australian Fixed Income",
+        "description": "Investment-grade AUD corporate and government bonds.",
         "risk_level": 3,
         "annual_charge_pct": Decimal("0.35"),
     },

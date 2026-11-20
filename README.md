@@ -5,6 +5,11 @@ managed funds investment account, identity is verified through **Experian CrossC
 applicants are kept informed by **SendGrid** transactional email. Includes a token-protected
 back office for manually deciding referred applications.
 
+Localised for **Australia**: BSB + account number funding (Direct Debit Request), optional Tax
+File Number for withholding, state/postcode address capture, AUD amounts, and AML/CTF Act
+consent wording. Experian endpoints default to the AU sandbox
+(`sandbox-api.experian.com.au`; production `api.experian.com.au`).
+
 ## Architecture
 
 ```
@@ -140,4 +145,6 @@ commented SSH deploy job in the workflow shows how to automate it against a VM.
 - [ ] Encryption at rest for PII columns (pgcrypto or KMS-level), plus data-retention policy
 - [ ] Redis-backed rate limiting if running more than one backend replica
 - [ ] Monitoring/alerting on `readyz`, KYC error rate, and email failure audit events
-- [ ] Penetration test & DPIA sign-off
+- [ ] Penetration test & Privacy Impact Assessment (Privacy Act 1988 / APPs) sign-off
+- [ ] AML/CTF program alignment (AUSTRAC) — safe-harbour verification settings in the
+      CrossCore workflow

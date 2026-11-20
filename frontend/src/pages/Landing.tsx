@@ -17,15 +17,15 @@ export default function Landing() {
         <h1>Invest in your future, in minutes</h1>
         <p>
           Open a managed funds account online. Choose from our range of professionally managed
-          portfolios, start from £500, and verify your identity electronically — no paperwork,
+          portfolios, start from $500, and verify your identity electronically — no paperwork,
           no branch visit.
         </p>
         <Link to="/apply" className="btn btn-primary btn-large">
           Start your application
         </Link>
         <p className="hero-note">
-          Takes about 10 minutes. You'll need your bank details and, ideally, your National
-          Insurance number. Your progress is saved as you go.
+          Takes about 10 minutes. You'll need your BSB and account number and, ideally, your
+          Tax File Number. Your progress is saved as you go.
         </p>
       </section>
 

@@ -73,7 +73,13 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
         <dl>
           <Row
             label="Address"
-            value={[data.address?.line1, data.address?.line2, data.address?.city, data.address?.postcode]
+            value={[
+              data.address?.line1,
+              data.address?.line2,
+              data.address?.city,
+              data.address?.state,
+              data.address?.postcode,
+            ]
               .filter(Boolean)
               .join(', ')}
           />
@@ -128,7 +134,7 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
         </header>
         <dl>
           <Row label="Account holder" value={data.bank?.account_holder_name ?? '—'} />
-          <Row label="Sort code" value={data.bank?.sort_code ?? '—'} />
+          <Row label="BSB" value={data.bank?.bsb ?? '—'} />
           <Row
             label="Account number"
             value={data.bank ? `****${data.bank.account_number.slice(-4)}` : '—'}
@@ -170,9 +176,9 @@ export function ReviewStep({ data, funds, onBack, onEdit, onSubmit, saving }: Pr
           <label>
             <input type="checkbox" {...register('consent_kyc')} />
             <span>
-              I consent to electronic identity, anti-money-laundering and fraud-prevention checks
-              being carried out with credit reference agencies. This leaves a soft footprint and
-              does not affect my credit score.
+              I consent to my identity being verified electronically against records held by
+              credit reporting bodies and other data sources, as required under the AML/CTF Act
+              2006. This check is not a credit check and does not affect my credit score.
             </span>
           </label>
           {errors.consent_kyc && (

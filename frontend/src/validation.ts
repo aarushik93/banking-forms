@@ -4,9 +4,9 @@ export const MIN_INITIAL_INVESTMENT = 500
 export const MAX_INITIAL_INVESTMENT = 1_000_000
 export const MAX_MONTHLY_CONTRIBUTION = 50_000
 
-const UK_POSTCODE = /^[A-Za-z]{1,2}\d[A-Za-z\d]? ?\d[A-Za-z]{2}$/
-const NINO = /^[A-Za-z]{2}\d{6}[A-Za-z]$/
-export const SORT_CODE = /^\d{2}[- ]?\d{2}[- ]?\d{2}$/
+const AU_POSTCODE = /^\d{4}$/
+const TFN = /^\d{8,9}$/
+export const BSB = /^\d{3}[- ]?\d{3}$/
 
 function isAdult(dob: string): boolean {
   const birth = new Date(dob)
@@ -39,8 +39,11 @@ export const personalSchema = z.object({
 export const addressSchema = z.object({
   line1: z.string().min(1, 'Enter the first line of your address').max(255),
   line2: z.string().max(255),
-  city: z.string().min(1, 'Enter your town or city').max(100),
-  postcode: z.string().regex(UK_POSTCODE, 'Enter a valid UK postcode'),
+  city: z.string().min(1, 'Enter your suburb').max(100),
+  state: z.enum(['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'ACT', 'NT'], {
+    errorMap: () => ({ message: 'Select your state or territory' }),
+  }),
+  postcode: z.string().regex(AU_POSTCODE, 'Enter a valid 4-digit postcode'),
   country: z.string().regex(/^[A-Z]{2}$/, 'Select a country'),
   years_at_address: z
     .number({ invalid_type_error: 'Enter the number of years at this address' })
@@ -61,19 +64,19 @@ export const financialSchema = z.object({
     .max(100_000_000, 'Enter a realistic income'),
   nationality: z.string().regex(/^[A-Z]{2}$/, 'Select your nationality'),
   tax_residency_country: z.string().regex(/^[A-Z]{2}$/, 'Select your country of tax residency'),
-  nino: z
+  tfn: z
     .string()
-    .refine((v) => v === '' || NINO.test(v), 'Enter a valid National Insurance number'),
+    .refine((v) => v === '' || TFN.test(v), 'Enter a valid 8 or 9 digit Tax File Number'),
 })
 
 export const investmentSchema = z.object({
   fund_code: z.string().min(1, 'Select a fund'),
   initial_investment: z
     .number({ invalid_type_error: 'Enter an amount' })
-    .min(MIN_INITIAL_INVESTMENT, `The minimum initial investment is £${MIN_INITIAL_INVESTMENT}`)
+    .min(MIN_INITIAL_INVESTMENT, `The minimum initial investment is $${MIN_INITIAL_INVESTMENT}`)
     .max(
       MAX_INITIAL_INVESTMENT,
-      `Amounts above £${MAX_INITIAL_INVESTMENT.toLocaleString()} require an adviser`,
+      `Amounts above $${MAX_INITIAL_INVESTMENT.toLocaleString()} require an adviser`,
     ),
   monthly_contribution: z
     .number({ invalid_type_error: 'Enter an amount (0 for none)' })
@@ -87,8 +90,8 @@ export const investmentSchema = z.object({
 
 export const bankSchema = z.object({
   account_holder_name: z.string().min(1, 'Enter the account holder name').max(100),
-  sort_code: z.string().regex(SORT_CODE, 'Enter a valid 6-digit sort code'),
-  account_number: z.string().regex(/^\d{8}$/, 'Enter a valid 8-digit account number'),
+  bsb: z.string().regex(BSB, 'Enter a valid 6-digit BSB'),
+  account_number: z.string().regex(/^\d{6,9}$/, 'Enter a valid account number (6–9 digits)'),
 })
 
 export const declarationsSchema = z.object({

@@ -19,7 +19,7 @@ export function FinancialStep({ defaultValues, onNext, onBack, saving }: Props) 
     formState: { errors },
   } = useForm<FinancialValues>({
     resolver: zodResolver(financialSchema),
-    defaultValues: { nationality: 'GB', tax_residency_country: 'GB', nino: '', ...defaultValues },
+    defaultValues: { nationality: 'AU', tax_residency_country: 'AU', tfn: '', ...defaultValues },
   })
 
   return (
@@ -44,7 +44,7 @@ export function FinancialStep({ defaultValues, onNext, onBack, saving }: Props) 
             ))}
           </select>
         </Field>
-        <Field label="Annual income (£)" error={errors.annual_income?.message}>
+        <Field label="Annual income ($)" error={errors.annual_income?.message}>
           <input type="number" min={0} {...register('annual_income', { valueAsNumber: true })} />
         </Field>
         <Field label="Nationality" error={errors.nationality?.message}>
@@ -67,11 +67,11 @@ export function FinancialStep({ defaultValues, onNext, onBack, saving }: Props) 
         </Field>
       </div>
       <Field
-        label="National Insurance number (optional)"
-        hint="Providing it speeds up identity verification"
-        error={errors.nino?.message}
+        label="Tax File Number (optional)"
+        hint="Quoting your TFN is not compulsory, but without it we must withhold tax from earnings at the highest marginal rate"
+        error={errors.tfn?.message}
       >
-        <input type="text" placeholder="QQ123456C" {...register('nino')} />
+        <input type="text" inputMode="numeric" placeholder="123 456 789" maxLength={9} {...register('tfn')} />
       </Field>
       <div className="wizard-actions">
         <button type="button" className="btn btn-ghost" onClick={onBack} disabled={saving}>

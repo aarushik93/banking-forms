@@ -32,7 +32,7 @@ export function InvestmentStep({ funds, defaultValues, onNext, onBack, saving }:
     <form onSubmit={handleSubmit(onNext)} noValidate>
       <h2>Your investment</h2>
       <p className="step-intro">
-        Choose a fund and how much you'd like to invest. The minimum initial investment is £
+        Choose a fund and how much you'd like to invest. The minimum initial investment is $
         {MIN_INITIAL_INVESTMENT}.
       </p>
       <Field label="Fund" error={errors.fund_code?.message}>
@@ -49,7 +49,7 @@ export function InvestmentStep({ funds, defaultValues, onNext, onBack, saving }:
       </Field>
       {selected && <p className="fund-description">{selected.description}</p>}
       <div className="grid-2">
-        <Field label="Initial lump sum (£)" error={errors.initial_investment?.message}>
+        <Field label="Initial lump sum ($)" error={errors.initial_investment?.message}>
           <input
             type="number"
             min={MIN_INITIAL_INVESTMENT}
@@ -58,7 +58,7 @@ export function InvestmentStep({ funds, defaultValues, onNext, onBack, saving }:
           />
         </Field>
         <Field
-          label="Monthly contribution (£)"
+          label="Monthly contribution ($)"
           hint="Enter 0 if you don't want to contribute monthly"
           error={errors.monthly_contribution?.message}
         >

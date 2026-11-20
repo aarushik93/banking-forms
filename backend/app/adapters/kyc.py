@@ -37,10 +37,10 @@ class KycApplicant:
     phone: str
     address_line1: str
     address_line2: str | None
-    city: str
+    city: str  # suburb
+    state: str
     postcode: str
     country: str
-    nino: str | None
 
 
 @dataclass(frozen=True)
@@ -157,6 +157,7 @@ class ExperianCrossCoreProvider:
                     "street": applicant.address_line1,
                     "street2": applicant.address_line2 or "",
                     "postTown": applicant.city,
+                    "stateProvinceCode": applicant.state,
                     "postal": applicant.postcode,
                     "countryCode": applicant.country,
                 }
@@ -164,10 +165,6 @@ class ExperianCrossCoreProvider:
             "emails": [{"id": "EMAIL_1", "email": applicant.email}],
             "telephones": [{"id": "PHONE_1", "number": applicant.phone}],
         }
-        if applicant.nino:
-            contact["identityDocuments"] = [
-                {"documentType": "NATIONAL_INSURANCE_NUMBER", "documentNumber": applicant.nino}
-            ]
         return {
             "header": {
                 "requestType": "IdAndFraud",
