@@ -8,7 +8,7 @@ const validPersonal = {
   last_name: 'Smith',
   date_of_birth: '1990-04-12',
   email: 'jane@example.com',
-  phone: '+44 7700 900123',
+  phone: '+61 412 345 678',
 }
 
 function dobForAge(age: number): string {

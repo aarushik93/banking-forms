@@ -25,7 +25,7 @@ describe('PersonalStep', () => {
     await userEvent.type(screen.getByLabelText(/last name/i), 'Smith')
     await userEvent.type(screen.getByLabelText(/date of birth/i), '1990-04-12')
     await userEvent.type(screen.getByLabelText(/email/i), 'jane@example.com')
-    await userEvent.type(screen.getByLabelText(/phone/i), '+44 7700 900123')
+    await userEvent.type(screen.getByLabelText(/phone/i), '+61 412 345 678')
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
 
     expect(onNext).toHaveBeenCalledWith(
