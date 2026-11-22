@@ -74,7 +74,8 @@ export default function App() {
         </div>
         <p className="footer-disclaimer">
           Opal Bank is a fictional demonstration platform and not a real financial institution.
-          Nothing here is financial advice, and no real accounts are opened. Capital at risk.
+          Nothing here is financial advice, no real accounts are opened, and no money is ever
+          handled.
         </p>
       </footer>
     </BrowserRouter>
